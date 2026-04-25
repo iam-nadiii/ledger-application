@@ -1,5 +1,8 @@
 package com.pluralsight;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Scanner;
 
 
@@ -11,55 +14,79 @@ public class App {
     public static void main(String[] args) {
         boolean systemIsRunning = true;
 
-
-        booksList[0] = new Book("The Great Gatsby", "9780743273565", 1, true, "Conor");
-        booksList[1] = new Book("To Kill a Mockingbird", "9780061120084", 2, false);
-        booksList[2] = new Book("1984", "9780451524935", 3, false);
-        booksList[3] = new Book("Pride and Prejudice", "9781503290563", 4, true, "Henry");
-        booksList[4] = new Book("The Catcher in the Rye", "9780316769488", 5, false);
-        booksList[5] = new Book("The Hobbit", "9780547928227", 6, false);
-        booksList[6] = new Book("Moby Dick", "9781503280786", 7, false);
-        booksList[7] = new Book("War and Peace", "9780199232765", 8, false);
-        booksList[8] = new Book("The Odyssey", "9780140268867", 9, true, "Wilson");
-        booksList[9] = new Book("Crime and Punishment", "9780486415871", 10, false);
-        booksList[10] = new Book("Brave New World", "9780060850524", 11, false);
-        booksList[11] = new Book("Jane Eyre", "9780141441146", 12, true, "Ezra");
-        booksList[12] = new Book("The Lord of the Rings", "9780618640157", 13, false);
-        booksList[13] = new Book("The Alchemist", "9780061122415", 14, false, "");
-        booksList[14] = new Book("Sapiens", "9780062316097", 15, true, "David");
-        booksList[15] = new Book("The Kite Runner", "9781594631931", 16, false, "");
-        booksList[16] = new Book("The Da Vinci Code", "9780307474278", 17, true, "Sarah");
-        booksList[17] = new Book("Harry Potter and the Sorcerer's Stone", "9780590353427", 18, false, "");
-        booksList[18] = new Book("The Hunger Games", "9780439023481", 19, false, "");
-        booksList[19] = new Book("The Book Thief", "9780375842207", 20, true, "Emily");
-
-
-
-        runMyApp();
+        System.out.println("Love");
+        runHomeScreen();
 
 
     }
 
-    private static void runMyApp() {
+    private static void runHomeScreen() {
         boolean systemIsRunning = true;
 
 
         do {
             System.out.println("=== Menu ===");
-            System.out.println("(1) Show Available Books\n" +
-                    "(2) Show Checked Out Books\n" +
-                    "(3) Exit - closes out of the application");
-            int userChoice = input.nextInt();
+            System.out.println("(D) Add Deposit\n" +
+                    "(P) Make Payment\n" +
+                    "(L) Ledger\n" +
+                    "(X) Exit - closes out of the application");
+            char userChoice = input.next().charAt(0);
             input.nextLine();
 
             switch (userChoice) {
-                case 1:
-                    showAvailableBooks(booksList);
+                case 'D', 'd':
+                    runDepositScreen();
                     break;
-                case 2:
-                    showCheckedOutBooks(booksList);
+                case 'P', 'p':
+                    runPaymentScreen();
                     break;
-                case 3:
+                case 'L', 'l':
+                    runLedgerScreen();
+                    System.out.println("Thanks for using our services!");
+                    System.out.println("System exiting now.");
+                    systemIsRunning = false;
+                    return;
+                case 'X', 'x':
+                    System.out.println("Thanks for using our services!");
+                    System.out.println("System exiting now.");
+                    systemIsRunning = false;
+                    return;
+                default:
+                    System.out.println("Wrong input. Try again.");
+            }
+        } while (systemIsRunning);
+
+    }
+
+    private static void runLedgerScreen() {
+        boolean systemIsRunning = true;
+
+
+        do {
+            System.out.println("=== Ledger Menu ===");
+            System.out.println("Display:\n" +
+                    "(A) All Entires\n" +
+                    "(D) Deposits\n" +
+                    "(P) Payments\n" +
+                    "(R) Reports\n" +
+                    "(H) Go back to Home Screen");
+            char userChoice = input.next().charAt(0);
+            input.nextLine();
+
+            switch (userChoice) {
+                case 'A', 'a':
+                    displayAllEntries();
+                    break;
+                case 'P', 'p':
+                    runPaymentScreen();
+                    break;
+                case 'L', 'l':
+                    runLedgerScreen();
+                    System.out.println("Thanks for using our services!");
+                    System.out.println("System exiting now.");
+                    systemIsRunning = false;
+                    return;
+                case 'X', 'x':
                     System.out.println("Thanks for using our services!");
                     System.out.println("System exiting now.");
                     systemIsRunning = false;
@@ -70,75 +97,133 @@ public class App {
         } while (systemIsRunning);
     }
 
-    public static void showAvailableBooks(Book[] books) {
-        for (Book book : books) {
-            if (book.getIsCheckedOut() == false) {
-                System.out.println("[Title: " + book.getTitle() + ", ISBN: " + book.getIsbn() + ", " +
-                        "ID: " + book.getId() + "]");
-            }
-        }
-        System.out.println();
-        System.out.println("== Menu ==\n" +
-                "(1) Check book out\n" +
-                "(2) Go back to previous menu");
-        int userChoice = input.nextInt();
-        input.nextLine();
-
-        switch (userChoice) {
-            case 1:
-                System.out.println("Enter the title of the book you want to check out: ");
-                String title = input.nextLine();
-
-                System.out.println("Enter your name: ");
-                String name = input.nextLine();
-
-                for (int i = 0; i < booksList.length; i++) {
-                    if (booksList[i].getTitle().equals(title)) {
-                        booksList[i].setCheckedOutTo(name);
-                        booksList[i].setIsCheckedOut(true);
-                    }
-                }
-
-                break;
-            case 2:
-                runMyApp();
-                break;
-
-        }
-    }
-
-    public static void showCheckedOutBooks (Book[] books){
-        System.out.println("=== Checked Out Books ===");
-        for (Book book : books) {
-            if (book.getIsCheckedOut()  ) {
-                System.out.println("[Title: " + book.getTitle() + ", ISBN: " + book.getIsbn() + ", " +
-                        "ID: " + book.getId() + ", Checked Out To: " + book.getCheckedOutTo() + "]");
-            }
-
-        }
-
-        System.out.println("=== Menu ===\n" +
-                "(1) Check In a Book\n" +
-                "(2) Go back to home screen");
-        int userChoice = input.nextInt();
-
-        switch (userChoice){
-            case 1:
-                System.out.println("Enter the ID of the book you want to check in: ");
-                int id = input.nextInt();
-
-                checkIn(id);
-        }
+    private static void displayAllEntries(){
 
     }
 
-    public static void checkIn(int id){
-        for(Book book: booksList){
-            if(book.getId() == id){
-                book.setIsCheckedOut(false);
-                book.setCheckedOutTo("");
-            }
-        }
-    }
-}
 
+
+    //• Ledger - All entries should show the newest entries first
+//o A) All - Display all entries
+//o D) Deposits - Display only the entries that are deposits into the account
+//o P) Payments - Display only the negative entries (or payments)
+//o R) Reports - A new screen that allows the user to run pre-defined reports or
+//to run a custom search
+//▪ 1) Month To Date
+//▪ 2) Previous Month
+//▪ 3) Year To Date
+//▪ 4) Previous Year
+//▪ 5) Search by Vendor - prompt the user for the vendor name and
+//display all entries for that vendor
+//▪ 0) Back - go back to the Ledger page
+//o H) Home - go back to the home page
+
+    private static void runDepositScreen() {
+    }
+
+    private static void runPaymentScreen() {
+    }
+
+
+
+//        private static void extractFile() throws IOException {
+//            FileReader fileReader = new FileReader("inventory.csv");
+//            BufferedReader bufferedReader = new BufferedReader(fileReader);
+//
+//
+//            String input;
+//
+//            while((input = bufferedReader.readLine()) != null) {
+//                String[] itemAttributes = input.split("\\|");
+//                Item currentItem = new Item();
+//                currentItem.setItemId(Integer.parseInt(itemAttributes[0]));
+//                currentItem.setName(itemAttributes[1]);
+//                currentItem.setPrice(Double.parseDouble(itemAttributes[2]));
+//                myItemsArray.add(currentItem);
+//            }
+//
+//            bufferedReader.close();
+//        }
+    }
+
+
+    //        • Home Screen
+//o The home screen should give the user the following options. The
+//application should continue to run until the user chooses to exit.
+//        ▪ D) Add Deposit - prompt user for the deposit information and save it
+//to the csv file
+//▪ P) Make Payment (Debit) - prompt user for the debit information
+//and save it to the csv file
+//▪ L) Ledger - display the ledger screen
+//▪ X) Exit - exit the application
+
+
+
+
+
+
+//Description
+//In this project, you will use what you have learned about Java programming to create a
+//CLI application. With this application you can track all financial transactions for a
+//business or for personal use.
+//All transactions in the application should be read from and saved to a transaction file
+//named transactions.csv. Each transaction should be saved as a single line with
+//the following format.
+//        date|time|description|vendor|amount
+//2023-04-15|10:13:25|ergonomic keyboard|Amazon|-89.50
+//        2023-04-15|11:15:00|Invoice 1001 paid|Joe|1500.00
+//        3
+
+//Application Requirements
+//Your application must include several screens with the listed features in order to be
+//considered complete:
+//        • Home Screen
+//o The home screen should give the user the following options. The
+//application should continue to run until the user chooses to exit.
+//        ▪ D) Add Deposit - prompt user for the deposit information and save it
+//to the csv file
+//▪ P) Make Payment (Debit) - prompt user for the debit information
+//and save it to the csv file
+//▪ L) Ledger - display the ledger screen
+//▪ X) Exit - exit the application
+
+
+
+
+
+
+//4
+//Bonus and Presentations
+//Challenge Yourself
+//If you have time and want to challenge yourself, consider the following:
+//        1. On the reports screen add another option for a custom search. Prompt the user
+//for search values for all ledger entry properties.
+//o 6) Custom Search - prompt the user for the following search values.
+//        ▪ Start Date
+//▪ End Date
+//▪ Description
+//▪ Vendor
+//▪ Amount
+//o If the user enters a value for a field you should filter on that field
+//o If the user does not enter a value, you should not filter on that field
+//2. Customize your app
+//o Trick out your console app by giving it a unique app name, starter screen
+//o You can even make your transactions look like it’s a part of your unique app
+//o Some examples: Restaurant Sales/Purchases, Record Store Sales/Purchases,
+//Clothing Store Sales/Purchases
+//Other Requirements
+//Your project must also meet the following requirements:
+//        • Your code must be in a public GitHub repository
+//• The repository must contain an appropriate Git commit history
+//o At a minimum, you should have a commit for each meaningful piece of
+//work completed
+//• It must contain an informative README file that:
+//o Describes your project
+//o Includes description for how to run the project
+//Class Demonstrations
+//Each student will be given 10 minutes to demonstrate their project to the class on
+//"project demonstration day". During this time, you will:
+//        • Present your application - run through the different screens and scenarios
+//5
+//        • Describe / show one interesting piece of code that you wrote
+//• Answer questions from the audience if time permit
