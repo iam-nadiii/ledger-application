@@ -4,20 +4,35 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.security.spec.RSAOtherPrimeInfo;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
+import java.time.*;
 
 
 
 
-public class App {
+public class App  {
     static Scanner input = new Scanner(System.in);
     static ArrayList<Transaction> transactionsList = new ArrayList<>();
+    ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.systemDefault());
 
     public static void main(String[] args) {
         boolean systemIsRunning = true;
+//        ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.systemDefault());
 
-        System.out.println("Love");
+//        DateTimeFormatter fmt4 = DateTimeFormatter.ofPattern("EEEE, MMM dd, yyyy  hh:mm");
+//        String formattedDate5 = now.format(fmt4);
+//        System.out.println(formattedDate5);
+
+        try {
+            extractFile("transactions.csv");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         runHomeScreen();
 
 
@@ -98,36 +113,77 @@ public class App {
         } while (true);
     }
 
+    //o R) Reports - A new screen that allows the user to run pre-defined reports or
+//to run a custom search
+//▪ 1) Month To Date
+//▪ 2) Previous Month
+//▪ 3) Year To Date
+//▪ 4) Previous Year
+//▪ 5) Search by Vendor - prompt the user for the vendor name and
+//display all entries for that vendor
+
     private static void showReports() {
+        System.out.println("=== Choose a type of report to run: ");
+        System.out.println(" 1) Month To Date\n" +
+                " 2) Previous Month\n" +
+                " 3) Year To Date\n" +
+                " 4) Previous Year\n" +
+                " 5) Search by Vendor");
+
+        int userChoice = input.nextInt();
+        input.nextLine();
+
+        switch (userChoice) {
+            case 1:
+                displayMonthToDateReport();
+                break;
+            case 2:
+//                displayPreviousMonthReport();
+                break;
+            case 3:
+//                displayYearToDateReport();
+                break;
+            case 4:
+//                displayPreviousYearReport();
+                break;
+            case 5:
+//                displayByVendor();
+                break;
+            default:
+                System.out.println("Wrong input. Try again.");
+        }
+
 
     }
 
+    private static void displayMonthToDateReport() {
+        System.out.println("=== Month To Date Report");
+        double totalPayments = 0;
+        double totalDeposits = 0;
+
+
+
+    }
+
+
     private static void displayPayments() {
-        try {
-            extractFile("transactions.csv");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        for(int i = transactionsList.size() -1; i >= 0; i--){
-            if (transactionsList.get(i).getAmount() < 0) {
-                System.out.println("[Date: " + transactionsList.get(i).getDate() + ", time: " + transactionsList.get(i).getTime()
-                        + ", description: " + transactionsList.get(i).getDescription() + ", vendor: " + transactionsList.get(i).getVendor()
-                        + ", amount: $" + transactionsList.get(i).getAmount() + "]");
+
+        for(Transaction transaction: transactionsList){
+            if (transaction.getAmount() < 0) {
+                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
+                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
+                        + ", amount: $" + transaction.getAmount() + "]");
             }
         }
     }
 
     private static void displayDeposits() {
-        try {
-            extractFile("transactions.csv");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        for(int i = transactionsList.size() -1; i >= 0; i--){
-            if (transactionsList.get(i).getAmount() > 0) {
-                System.out.println("[Date: " + transactionsList.get(i).getDate() + ", time: " + transactionsList.get(i).getTime()
-                        + ", description: " + transactionsList.get(i).getDescription() + ", vendor: " + transactionsList.get(i).getVendor()
-                        + ", amount: $" + transactionsList.get(i).getAmount() + "]");
+
+        for(Transaction transaction: transactionsList){
+            if (transaction.getAmount() > 0) {
+                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
+                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
+                        + ", amount: $" + transaction.getAmount() + "]");
             }
         }
 
@@ -135,15 +191,10 @@ public class App {
 
     private static void displayAllEntries(){
 
-        try {
-            extractFile("transactions.csv");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        for(int i = transactionsList.size() -1; i >= 0; i--){
-            System.out.println("[Date: " + transactionsList.get(i).getDate() + ", time: " + transactionsList.get(i).getTime()
-                    + ", description: " + transactionsList.get(i).getDescription() + ", vendor: " + transactionsList.get(i).getVendor()
-                    + ", amount: $" + transactionsList.get(i).getAmount() + "]");
+        for(Transaction transaction: transactionsList){
+            System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
+                    + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
+                    + ", amount: $" + transaction.getAmount() + "]");
         }
 
     }
@@ -156,14 +207,7 @@ public class App {
 //o A) All - Display all entries
 //o D) Deposits - Display only the entries that are deposits into the account
 //o P) Payments - Display only the negative entries (or payments)
-//o R) Reports - A new screen that allows the user to run pre-defined reports or
-//to run a custom search
-//▪ 1) Month To Date
-//▪ 2) Previous Month
-//▪ 3) Year To Date
-//▪ 4) Previous Year
-//▪ 5) Search by Vendor - prompt the user for the vendor name and
-//display all entries for that vendor
+
 //▪ 0) Back - go back to the Ledger page
 //o H) Home - go back to the home page
 
@@ -187,28 +231,21 @@ public class App {
             while((input = bufferedReader.readLine()) != null) {
                 String[] transactionAttributes = input.split("\\|");
                 Transaction currentTransaction = new Transaction();
-                currentTransaction.setDate(transactionAttributes[0]);
-                currentTransaction.setTime(transactionAttributes[1]);
+                currentTransaction.setDate(LocalDate.parse(transactionAttributes[0]));
+                currentTransaction.setTime(LocalTime.parse(transactionAttributes[1]));
                 currentTransaction.setDescription(transactionAttributes[2]);
                 currentTransaction.setVendor(transactionAttributes[3]);
                 currentTransaction.setAmount(Double.parseDouble(transactionAttributes[4]));
                 transactionsList.add(currentTransaction);
             }
+            Collections.sort(transactionsList);
 
             bufferedReader.close();
         }
     }
 
 
-    //        • Home Screen
-//o The home screen should give the user the following options. The
-//application should continue to run until the user chooses to exit.
-//        ▪ D) Add Deposit - prompt user for the deposit information and save it
-//to the csv file
-//▪ P) Make Payment (Debit) - prompt user for the debit information
-//and save it to the csv file
-//▪ L) Ledger - display the ledger screen
-//▪ X) Exit - exit the application
+
 
 
 

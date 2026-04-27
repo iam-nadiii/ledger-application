@@ -1,25 +1,29 @@
 package com.pluralsight;
 
-public class Transaction {
-    private String date;
-    private String time;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+
+public class Transaction implements Comparable<Transaction> {
+    private LocalDate date;
+    private LocalTime time;
     private String description;
     private String vendor;
     private double amount;
 
-    public String getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 
-    public String getTime() {
+    public LocalTime getTime() {
         return time;
     }
 
-    public void setTime(String time) {
+    public void setTime(LocalTime time) {
         this.time = time;
     }
 
@@ -45,6 +49,17 @@ public class Transaction {
 
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    @Override
+    public int compareTo(Transaction other) {
+        int dateCompare = other.date.compareTo(this.date);
+
+        if (dateCompare != 0){
+            return dateCompare;
+        }
+
+        return this.time.compareTo(other.time);
     }
 
 
