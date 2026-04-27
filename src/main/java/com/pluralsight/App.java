@@ -3,6 +3,8 @@ package com.pluralsight;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.spec.RSAOtherPrimeInfo;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 
@@ -10,6 +12,7 @@ import java.util.Scanner;
 
 public class App {
     static Scanner input = new Scanner(System.in);
+    static ArrayList<Transaction> transactionsList = new ArrayList<>();
 
     public static void main(String[] args) {
         boolean systemIsRunning = true;
@@ -59,7 +62,7 @@ public class App {
     }
 
     private static void runLedgerScreen() {
-        boolean systemIsRunning = true;
+
 
 
         do {
@@ -77,29 +80,75 @@ public class App {
                 case 'A', 'a':
                     displayAllEntries();
                     break;
-                case 'P', 'p':
-                    runPaymentScreen();
+                case 'D', 'd':
+                    displayDeposits();
                     break;
-                case 'L', 'l':
-                    runLedgerScreen();
-                    System.out.println("Thanks for using our services!");
-                    System.out.println("System exiting now.");
-                    systemIsRunning = false;
-                    return;
-                case 'X', 'x':
-                    System.out.println("Thanks for using our services!");
-                    System.out.println("System exiting now.");
-                    systemIsRunning = false;
-                    return;
+                case 'P', 'p':
+                    displayPayments();
+                    break;
+                case 'R', 'r':
+                    showReports();
+                    break;
+                case 'H', 'h':
+                    runHomeScreen();
+                    break;
                 default:
                     System.out.println("Wrong input. Try again.");
             }
-        } while (systemIsRunning);
+        } while (true);
+    }
+
+    private static void showReports() {
+
+    }
+
+    private static void displayPayments() {
+        try {
+            extractFile("transactions.csv");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for(int i = transactionsList.size() -1; i >= 0; i--){
+            if (transactionsList.get(i).getAmount() < 0) {
+                System.out.println("[Date: " + transactionsList.get(i).getDate() + ", time: " + transactionsList.get(i).getTime()
+                        + ", description: " + transactionsList.get(i).getDescription() + ", vendor: " + transactionsList.get(i).getVendor()
+                        + ", amount: $" + transactionsList.get(i).getAmount() + "]");
+            }
+        }
+    }
+
+    private static void displayDeposits() {
+        try {
+            extractFile("transactions.csv");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for(int i = transactionsList.size() -1; i >= 0; i--){
+            if (transactionsList.get(i).getAmount() > 0) {
+                System.out.println("[Date: " + transactionsList.get(i).getDate() + ", time: " + transactionsList.get(i).getTime()
+                        + ", description: " + transactionsList.get(i).getDescription() + ", vendor: " + transactionsList.get(i).getVendor()
+                        + ", amount: $" + transactionsList.get(i).getAmount() + "]");
+            }
+        }
+
     }
 
     private static void displayAllEntries(){
 
+        try {
+            extractFile("transactions.csv");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for(int i = transactionsList.size() -1; i >= 0; i--){
+            System.out.println("[Date: " + transactionsList.get(i).getDate() + ", time: " + transactionsList.get(i).getTime()
+                    + ", description: " + transactionsList.get(i).getDescription() + ", vendor: " + transactionsList.get(i).getVendor()
+                    + ", amount: $" + transactionsList.get(i).getAmount() + "]");
+        }
+
     }
+
+
 
 
 
@@ -126,24 +175,28 @@ public class App {
 
 
 
-//        private static void extractFile() throws IOException {
-//            FileReader fileReader = new FileReader("inventory.csv");
-//            BufferedReader bufferedReader = new BufferedReader(fileReader);
-//
-//
-//            String input;
-//
-//            while((input = bufferedReader.readLine()) != null) {
-//                String[] itemAttributes = input.split("\\|");
-//                Item currentItem = new Item();
-//                currentItem.setItemId(Integer.parseInt(itemAttributes[0]));
-//                currentItem.setName(itemAttributes[1]);
-//                currentItem.setPrice(Double.parseDouble(itemAttributes[2]));
-//                myItemsArray.add(currentItem);
-//            }
-//
-//            bufferedReader.close();
-//        }
+    private static void extractFile(String fileName) throws IOException {
+            FileReader fileReader = new FileReader(fileName);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+
+
+            String input;
+            bufferedReader.readLine();
+
+            while((input = bufferedReader.readLine()) != null) {
+                String[] transactionAttributes = input.split("\\|");
+                Transaction currentTransaction = new Transaction();
+                currentTransaction.setDate(transactionAttributes[0]);
+                currentTransaction.setTime(transactionAttributes[1]);
+                currentTransaction.setDescription(transactionAttributes[2]);
+                currentTransaction.setVendor(transactionAttributes[3]);
+                currentTransaction.setAmount(Double.parseDouble(transactionAttributes[4]));
+                transactionsList.add(currentTransaction);
+            }
+
+            bufferedReader.close();
+        }
     }
 
 
