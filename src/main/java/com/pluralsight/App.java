@@ -7,6 +7,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Scanner;
 import java.time.*;
 
@@ -184,13 +185,75 @@ public class App  {
     }
 
     private static void displayCutsomReport() {
-        System.out.println("=== Choose a type of report to run: ");
-        System.out.println(" 1) Month To Date\n" +
-                " 2) Previous Month\n" +
-                " 3) Year To Date\n" +
-                " 4) Previous Year\n" +
-                " 5) Search by Vendor\n" +
-                " 6) Run a custom search");
+        System.out.println("=== Custom Search === ");
+        System.out.println("Enter start date (yyyy-MM-dd): ");
+        String startDate = input.next();
+
+        System.out.println("Enter end date (yyyy-MM-dd): ");
+        String endDate = input.next();
+
+//        System.out.println("Enter transaction description: ");
+//        String description = input.nextLine();
+//
+//        System.out.println("Enter vendor: ");
+//        String vendor = input.nextLine();
+//
+//        System.out.println("Enter amount: ");
+//        String amount = input.next();
+
+        createCustomReport(startDate, endDate);
+
+
+    }
+
+    private static void createCustomReport(String startDate, String endDate) {
+
+        HashSet<Transaction> transactionsSet = new HashSet<>();
+        boolean matches = false;
+
+        Collections.sort(transactionsList);
+
+        for(Transaction transaction: transactionsList){
+
+            if(startDate != null){
+                if (transaction.getDate().isAfter(LocalDate.parse(startDate))){
+                    if (endDate != null){
+                        if (transaction.getDate().isBefore(LocalDate.parse(endDate))){
+                            matches = true;
+                        } else {
+                            matches = false;
+                        }
+                    }
+                } else {
+                    matches = false;
+                }
+            }
+
+
+//            if (startDate == null || transaction.getDate().isAfter(LocalDate.parse(startDate)) == false){
+//                matches = false;
+//
+//                }else {
+//                matches = true;
+//            }
+//            if (endDate ==null || transaction.getDate().isBefore(LocalDate.parse(endDate)) == false){
+//
+//                matches = false;
+//
+//            }else {
+//                matches = true;
+//            }
+            if (matches == true){
+                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
+                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
+                        + ", amount: $" + transaction.getAmount() + "]");
+            }
+
+        }
+        System.out.println("My custom report");
+
+
+
     }
 
 //    1. On the reports screen add another option for a custom search. Prompt the user
