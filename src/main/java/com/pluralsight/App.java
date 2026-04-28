@@ -7,7 +7,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Scanner;
 import java.time.*;
 
@@ -186,64 +185,62 @@ public class App  {
 
     private static void displayCutsomReport() {
         System.out.println("=== Custom Search === ");
+
         System.out.println("Enter start date (yyyy-MM-dd): ");
-        String startDate = input.next();
+        String startDate = input.nextLine();
 
         System.out.println("Enter end date (yyyy-MM-dd): ");
-        String endDate = input.next();
+        String endDate = input.nextLine();
 
-//        System.out.println("Enter transaction description: ");
-//        String description = input.nextLine();
-//
-//        System.out.println("Enter vendor: ");
-//        String vendor = input.nextLine();
-//
-//        System.out.println("Enter amount: ");
-//        String amount = input.next();
+        System.out.println("Enter transaction description: ");
+        String description = input.nextLine();
 
-        createCustomReport(startDate, endDate);
+        System.out.println("Enter vendor: ");
+        String vendor = input.nextLine();
+
+        System.out.println("Enter amount: ");
+        String amount = input.nextLine();
+
+        createCustomReport(startDate, endDate, description, vendor, amount);
 
 
     }
 
-    private static void createCustomReport(String startDate, String endDate) {
+    private static void createCustomReport(String startDate, String endDate, String description, String vendor,
+                                           String amount) {
 
-        HashSet<Transaction> transactionsSet = new HashSet<>();
-        boolean matches = false;
+
+
 
         Collections.sort(transactionsList);
 
         for(Transaction transaction: transactionsList){
+            boolean startDateMatches = true;
+            boolean endDateMatches = true;
+            boolean descriptionMatches = true;
+            boolean vendorMatches = true;
+            boolean amountMatches = true;
 
-            if(startDate != null){
-                if (transaction.getDate().isAfter(LocalDate.parse(startDate))){
-                    if (endDate != null){
-                        if (transaction.getDate().isBefore(LocalDate.parse(endDate))){
-                            matches = true;
-                        } else {
-                            matches = false;
-                        }
-                    }
-                } else {
-                    matches = false;
-                }
+            if(!startDate.isEmpty() && !transaction.getDate().isAfter(LocalDate.parse(startDate))){
+                startDateMatches = false;
+            }
+
+            if(!endDate.isEmpty() && !transaction.getDate().isBefore(LocalDate.parse(endDate))){
+                endDateMatches = false;
+            }
+            if(!description.isEmpty() && !transaction.getDescription().equalsIgnoreCase(description)){
+                amountMatches = false;
+            }
+            if(!vendor.isEmpty() && !transaction.getVendor().equalsIgnoreCase(vendor)){
+                vendorMatches = false;
+            }
+            if(!amount.isEmpty() && transaction.getAmount() != Double.parseDouble(amount)){
+                descriptionMatches = false;
             }
 
 
-//            if (startDate == null || transaction.getDate().isAfter(LocalDate.parse(startDate)) == false){
-//                matches = false;
-//
-//                }else {
-//                matches = true;
-//            }
-//            if (endDate ==null || transaction.getDate().isBefore(LocalDate.parse(endDate)) == false){
-//
-//                matches = false;
-//
-//            }else {
-//                matches = true;
-//            }
-            if (matches == true){
+
+            if (startDateMatches && endDateMatches && descriptionMatches && vendorMatches && amountMatches){
                 System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
                         + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
                         + ", amount: $" + transaction.getAmount() + "]");
