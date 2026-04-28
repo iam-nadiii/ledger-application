@@ -1,9 +1,7 @@
 package com.pluralsight;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.security.spec.RSAOtherPrimeInfo;
+import java.io.*;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -12,21 +10,20 @@ import java.util.Collections;
 import java.util.Scanner;
 import java.time.*;
 
-
+import static java.lang.Double.*;
 
 
 public class App  {
     static Scanner input = new Scanner(System.in);
     static ArrayList<Transaction> transactionsList = new ArrayList<>();
-    ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.systemDefault());
+
 
     public static void main(String[] args) {
         boolean systemIsRunning = true;
-//        ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.systemDefault());
+        LocalDate currentDate = LocalDate.from(LocalDateTime.now());
 
-//        DateTimeFormatter fmt4 = DateTimeFormatter.ofPattern("EEEE, MMM dd, yyyy  hh:mm");
-//        String formattedDate5 = now.format(fmt4);
-//        System.out.println(formattedDate5);
+
+        System.out.println(getCurrentLocalTime());
 
         try {
             extractFile("transactions.csv");
@@ -36,6 +33,40 @@ public class App  {
         runHomeScreen();
 
 
+    }
+
+    private static LocalTime getCurrentLocalTime() {
+        LocalTime currentTime = LocalTime.from(LocalDateTime.now());
+
+
+        DateTimeFormatter formattedTime = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String formattedTime1 = currentTime.format(formattedTime);
+        LocalTime fullyFormattedTime = LocalTime.parse(formattedTime1);
+        return fullyFormattedTime;
+    }
+
+    private static void extractFile(String fileName) throws IOException {
+        FileReader fileReader = new FileReader(fileName);
+        BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+
+
+        String input;
+        bufferedReader.readLine();
+
+        while((input = bufferedReader.readLine()) != null) {
+            String[] transactionAttributes = input.split("\\|");
+            Transaction currentTransaction = new Transaction();
+            currentTransaction.setDate(LocalDate.parse(transactionAttributes[0]));
+            currentTransaction.setTime(LocalTime.parse(transactionAttributes[1]));
+            currentTransaction.setDescription(transactionAttributes[2]);
+            currentTransaction.setVendor(transactionAttributes[3]);
+            currentTransaction.setAmount(parseDouble(transactionAttributes[4]));
+            transactionsList.add(currentTransaction);
+        }
+        Collections.sort(transactionsList);
+
+        bufferedReader.close();
     }
 
     private static void runHomeScreen() {
@@ -53,10 +84,10 @@ public class App  {
 
             switch (userChoice) {
                 case 'D', 'd':
-                    runDepositScreen();
+                    runAddDepositScreen();
                     break;
                 case 'P', 'p':
-                    runPaymentScreen();
+                    runMakePaymentScreen();
                     break;
                 case 'L', 'l':
                     runLedgerScreen();
@@ -157,7 +188,25 @@ public class App  {
     }
 
     private static void displayMonthToDateReport() {
-        System.out.println("=== Month To Date Report");
+        LocalTime currentTime = getCurrentLocalTime();
+        LocalDate currentDate = LocalDate.from(LocalDateTime.now());
+
+        int currentMonth = currentDate.getMonthValue();
+        int currentYear  = currentDate.getYear();
+
+
+        Collections.sort(transactionsList);
+        for(Transaction transaction: transactionsList){
+            if (transaction.getDate().getYear() == currentYear && transaction.getDate().getMonthValue() == currentMonth) {
+                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
+                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
+                        + ", amount: $" + transaction.getAmount() + "]");
+            }
+        }
+
+
+
+        System.out.println("=== Month To Date Report ====");
         double totalPayments = 0;
         double totalDeposits = 0;
 
@@ -167,7 +216,7 @@ public class App  {
 
 
     private static void displayPayments() {
-
+        Collections.sort(transactionsList);
         for(Transaction transaction: transactionsList){
             if (transaction.getAmount() < 0) {
                 System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
@@ -178,6 +227,7 @@ public class App  {
     }
 
     private static void displayDeposits() {
+        Collections.sort(transactionsList);
 
         for(Transaction transaction: transactionsList){
             if (transaction.getAmount() > 0) {
@@ -190,7 +240,7 @@ public class App  {
     }
 
     private static void displayAllEntries(){
-
+        Collections.sort(transactionsList);
         for(Transaction transaction: transactionsList){
             System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
                     + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
@@ -211,37 +261,83 @@ public class App  {
 //▪ 0) Back - go back to the Ledger page
 //o H) Home - go back to the home page
 
-    private static void runDepositScreen() {
+    private static void runAddDepositScreen() {
+        System.out.println("Enter the amount to deposit: ");
+        double payment = input.nextDouble();
+
+        System.out.println("Enter the name of source of income: ");
+        String vendor = input.next();
+
+        input.nextLine();
+        System.out.println("Enter income description: ");
+        String description = input.nextLine();
+
+        LocalTime timeOfTranasaction = getCurrentLocalTime();
+        LocalDate dateOfTransaction = LocalDate.from(LocalDateTime.now());
+
+
+        Transaction currentTransaction = new Transaction();
+        currentTransaction.setDate(dateOfTransaction);
+        currentTransaction.setTime(timeOfTranasaction);
+        currentTransaction.setDescription(description);
+        currentTransaction.setVendor(vendor);
+        currentTransaction.setAmount(payment);
+        transactionsList.add(currentTransaction);
+
+        addTransactionToFile(currentTransaction);
+
+
     }
 
-    private static void runPaymentScreen() {
+    private static void runMakePaymentScreen() {
+        System.out.println("Enter the amount to pay: ");
+        double payment = input.nextDouble() * -1;
+
+        System.out.println("Enter the name of the vendor: ");
+        String vendor = input.next();
+
+        input.nextLine();
+        System.out.println("Enter payment description: ");
+        String description = input.nextLine();
+
+        LocalTime timeOfTranasaction = getCurrentLocalTime();
+        LocalDate dateOfTransaction = LocalDate.from(LocalDateTime.now());
+
+
+        Transaction currentTransaction = new Transaction();
+        currentTransaction.setDate(dateOfTransaction);
+        currentTransaction.setTime(timeOfTranasaction);
+        currentTransaction.setDescription(description);
+        currentTransaction.setVendor(vendor);
+        currentTransaction.setAmount(payment);
+        transactionsList.add(currentTransaction);
+
+        addTransactionToFile(currentTransaction);
     }
 
+    private static void addTransactionToFile(Transaction currentTransaction) {
+        try {
+            FileWriter fileWriter = new FileWriter("transactions.csv", true);
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
 
-    private static void extractFile(String fileName) throws IOException {
-            FileReader fileReader = new FileReader(fileName);
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            bufferedWriter.write(currentTransaction.getDate() + "|" + currentTransaction.getTime() + "|" +
+                    currentTransaction.getDescription() + "|" + currentTransaction.getVendor() + "|" +
+                    currentTransaction.getAmount() + "\n");
 
 
-
-            String input;
-            bufferedReader.readLine();
-
-            while((input = bufferedReader.readLine()) != null) {
-                String[] transactionAttributes = input.split("\\|");
-                Transaction currentTransaction = new Transaction();
-                currentTransaction.setDate(LocalDate.parse(transactionAttributes[0]));
-                currentTransaction.setTime(LocalTime.parse(transactionAttributes[1]));
-                currentTransaction.setDescription(transactionAttributes[2]);
-                currentTransaction.setVendor(transactionAttributes[3]);
-                currentTransaction.setAmount(Double.parseDouble(transactionAttributes[4]));
-                transactionsList.add(currentTransaction);
-            }
-            Collections.sort(transactionsList);
-
-            bufferedReader.close();
+            bufferedWriter.close();
         }
+        catch (IOException e){
+            System.out.println("ERROR: An unexpected error occurred");
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
     }
 
 
