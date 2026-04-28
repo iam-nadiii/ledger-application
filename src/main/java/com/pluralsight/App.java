@@ -144,14 +144,6 @@ public class App  {
         } while (true);
     }
 
-    //o R) Reports - A new screen that allows the user to run pre-defined reports or
-//to run a custom search
-//▪ 1) Month To Date
-//▪ 2) Previous Month
-//▪ 3) Year To Date
-//▪ 4) Previous Year
-//▪ 5) Search by Vendor - prompt the user for the vendor name and
-//display all entries for that vendor
 
     private static void showReports() {
         System.out.println("=== Choose a type of report to run: ");
@@ -159,7 +151,8 @@ public class App  {
                 " 2) Previous Month\n" +
                 " 3) Year To Date\n" +
                 " 4) Previous Year\n" +
-                " 5) Search by Vendor");
+                " 5) Search by Vendor\n" +
+                " 6) Run a custom search");
 
         int userChoice = input.nextInt();
         input.nextLine();
@@ -169,22 +162,128 @@ public class App  {
                 displayMonthToDateReport();
                 break;
             case 2:
-//                displayPreviousMonthReport();
+                displayPreviousMonthReport();
                 break;
             case 3:
-//                displayYearToDateReport();
+                displayYearToDateReport();
                 break;
             case 4:
-//                displayPreviousYearReport();
+                displayPreviousYearReport();
                 break;
             case 5:
-//                displayByVendor();
+                displayByVendor();
+                break;
+            case 6:
+                displayCutsomReport();
                 break;
             default:
                 System.out.println("Wrong input. Try again.");
         }
 
 
+    }
+
+    private static void displayCutsomReport() {
+        System.out.println("=== Choose a type of report to run: ");
+        System.out.println(" 1) Month To Date\n" +
+                " 2) Previous Month\n" +
+                " 3) Year To Date\n" +
+                " 4) Previous Year\n" +
+                " 5) Search by Vendor\n" +
+                " 6) Run a custom search");
+    }
+
+//    1. On the reports screen add another option for a custom search. Prompt the user
+//for search values for all ledger entry properties.
+//o 6) Custom Search - prompt the user for the following search values.
+//        ▪ Start Date
+//▪ End Date
+//▪ Description
+//▪ Vendor
+//▪ Amount
+//o If the user enters a value for a field you should filter on that field
+//o If the user does not enter a value, you should not filter on that field
+
+    private static void displayByVendor() {
+
+        System.out.println("Enter the vendor you want a report on: ");
+        String vendor = input.nextLine();
+
+
+        Collections.sort(transactionsList);
+        for(Transaction transaction: transactionsList){
+            if (transaction.getVendor().equalsIgnoreCase(vendor)) {
+                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
+                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
+                        + ", amount: $" + transaction.getAmount() + "]");
+            }
+        }
+    }
+
+    private static void displayPreviousYearReport() {
+
+        System.out.println("Enter the year you want a report on: ");
+        int year = input.nextInt();
+
+        LocalTime currentTime = getCurrentLocalTime();
+        LocalDate currentDate = LocalDate.from(LocalDateTime.now());
+
+        int currentMonth = currentDate.getMonthValue();
+        int currentYear  = currentDate.getYear();
+
+
+        Collections.sort(transactionsList);
+        for(Transaction transaction: transactionsList){
+            if (transaction.getDate().getYear() == year ) {
+                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
+                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
+                        + ", amount: $" + transaction.getAmount() + "]");
+            }
+        }
+    }
+
+    private static void displayYearToDateReport() {
+        LocalTime currentTime = getCurrentLocalTime();
+        LocalDate currentDate = LocalDate.from(LocalDateTime.now());
+
+        int currentMonth = currentDate.getMonthValue();
+        int currentYear  = currentDate.getYear();
+
+
+        Collections.sort(transactionsList);
+        for(Transaction transaction: transactionsList){
+            if (transaction.getDate().getYear() == currentYear) {
+                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
+                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
+                        + ", amount: $" + transaction.getAmount() + "]");
+            }
+        }
+
+
+    }
+
+    private static void displayPreviousMonthReport() {
+        System.out.println("Enter the month you want a report on: ");
+        int month = input.nextInt();
+
+        System.out.println("Enter the year you want a report on: ");
+        int year = input.nextInt();
+
+        LocalTime currentTime = getCurrentLocalTime();
+        LocalDate currentDate = LocalDate.from(LocalDateTime.now());
+
+        int currentMonth = currentDate.getMonthValue();
+        int currentYear  = currentDate.getYear();
+
+
+        Collections.sort(transactionsList);
+        for(Transaction transaction: transactionsList){
+            if (transaction.getDate().getYear() == year && transaction.getDate().getMonthValue() == month) {
+                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
+                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
+                        + ", amount: $" + transaction.getAmount() + "]");
+            }
+        }
     }
 
     private static void displayMonthToDateReport() {
@@ -392,11 +491,15 @@ public class App  {
 //▪ Amount
 //o If the user enters a value for a field you should filter on that field
 //o If the user does not enter a value, you should not filter on that field
+
+
 //2. Customize your app
 //o Trick out your console app by giving it a unique app name, starter screen
 //o You can even make your transactions look like it’s a part of your unique app
 //o Some examples: Restaurant Sales/Purchases, Record Store Sales/Purchases,
 //Clothing Store Sales/Purchases
+
+
 //Other Requirements
 //Your project must also meet the following requirements:
 //        • Your code must be in a public GitHub repository
