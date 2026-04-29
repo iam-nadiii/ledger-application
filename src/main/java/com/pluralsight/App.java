@@ -1,7 +1,6 @@
 package com.pluralsight;
 
 import java.io.*;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -75,12 +74,23 @@ public class App  {
 
 
         do {
-            System.out.println("=== Menu ===");
-            System.out.println("(D) Add Deposit\n" +
-                    "(P) Make Payment\n" +
-                    "(L) Ledger\n" +
-                    "(X) Exit - closes out of the application");
-            char userChoice = input.next().charAt(0);
+            System.out.println("""
+        ==================================================
+                        HOME SCREEN
+        ==================================================
+
+        Select an option:
+
+            (D)  Add Deposit
+            (P)  Make Payment
+            (L)  View Ledger
+            (X)  Exit Application
+
+        --------------------------------------------------
+        Enter choice:
+        """);
+
+            char userChoice = input.next().toUpperCase().charAt(0);
             input.nextLine();
 
             switch (userChoice) {
@@ -113,13 +123,22 @@ public class App  {
 
 
         do {
-            System.out.println("=== Ledger Menu ===");
-            System.out.println("Display:\n" +
-                    "(A) All Entires\n" +
-                    "(D) Deposits\n" +
-                    "(P) Payments\n" +
-                    "(R) Reports\n" +
-                    "(H) Go back to Home Screen");
+            System.out.println("""
+        ==================================================
+                        LEDGER MENU
+        ==================================================
+
+        Display Options:
+
+            [A]  View All Entries
+            [D]  View Deposits
+            [P]  View Payments
+            [R]  Reports
+            [H]  Back to Home Screen
+
+        --------------------------------------------------
+        Enter choice: """);
+
             char userChoice = input.next().charAt(0);
             input.nextLine();
 
@@ -134,7 +153,7 @@ public class App  {
                     displayPayments();
                     break;
                 case 'R', 'r':
-                    showReports();
+                    showReportsMenu();
                     break;
                 case 'H', 'h':
                     runHomeScreen();
@@ -146,35 +165,45 @@ public class App  {
     }
 
 
-    private static void showReports() {
-        System.out.println("=== Choose a type of report to run: ");
-        System.out.println(" 1) Month To Date\n" +
-                " 2) Previous Month\n" +
-                " 3) Year To Date\n" +
-                " 4) Previous Year\n" +
-                " 5) Search by Vendor\n" +
-                " 6) Run a custom search");
+    private static void showReportsMenu() {
+        System.out.println("""
+        ==================================================
+                        REPORTS MENU
+        ==================================================
 
-        int userChoice = input.nextInt();
+        Choose a report to run:
+
+            1)  Month To Date
+            2)  Previous Month
+            3)  Year To Date
+            4)  Previous Year
+            5)  Search by Vendor
+            6)  Run a Custom Search
+
+        --------------------------------------------------
+        Enter choice:
+        """);
+
+        char userChoice = input.next().charAt(0);
         input.nextLine();
 
         switch (userChoice) {
-            case 1:
+            case '1':
                 displayMonthToDateReport();
                 break;
-            case 2:
+            case '2':
                 displayPreviousMonthReport();
                 break;
-            case 3:
+            case '3':
                 displayYearToDateReport();
                 break;
-            case 4:
+            case '4':
                 displayPreviousYearReport();
                 break;
-            case 5:
+            case '5':
                 displayByVendor();
                 break;
-            case 6:
+            case '6':
                 displayCutsomReport();
                 break;
             default:
@@ -253,6 +282,10 @@ public class App  {
             if (!vendor.isEmpty() && !transaction.getVendor().equalsIgnoreCase(vendor)) {
                 vendorMatches = false;
             }
+//            if (!vendor.isEmpty() &&
+//                    !transaction.getVendor().toLowerCase().contains(vendor.toLowerCase())) {
+//                vendorMatches = false;
+//            }
 
             if (!minAmount.isEmpty() && transaction.getAmount() < Double.parseDouble(minAmount)) {
                 minAmountMatches = false;
