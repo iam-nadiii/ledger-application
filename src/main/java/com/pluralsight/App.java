@@ -18,6 +18,7 @@ public class App  {
     static ArrayList<Transaction> transactionsList = new ArrayList<>();
 
 
+
     public static void main(String[] args) {
         boolean systemIsRunning = true;
         LocalDate currentDate = LocalDate.from(LocalDateTime.now());
@@ -198,189 +199,390 @@ public class App  {
         System.out.println("Enter vendor: ");
         String vendor = input.nextLine();
 
-        System.out.println("Enter amount: ");
-        String amount = input.nextLine();
+        System.out.println("Enter mininum amount: ");
+        String minAmount = input.nextLine();
 
-        createCustomReport(startDate, endDate, description, vendor, amount);
+        System.out.println("Enter maximum amount: ");
+        String maxAmount = input.nextLine();
+
+        createCustomReport(startDate, endDate, description, vendor, minAmount, maxAmount);
 
 
     }
 
+
     private static void createCustomReport(String startDate, String endDate, String description, String vendor,
-                                           String amount) {
+                                           String minAmount, String maxAmount) {
 
+        double totalIncome = 0;
+        double totalExpenses = 0;
 
+        System.out.println("\n==========================================================================================================");
+        System.out.println("                                      CUSTOM REPORT");
+        System.out.println("==========================================================================================================");
 
+        System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+
+        System.out.println("----------------------------------------------------------------------------------------------------------");
 
         Collections.sort(transactionsList);
 
-        for(Transaction transaction: transactionsList){
+        for (Transaction transaction : transactionsList) {
+
             boolean startDateMatches = true;
             boolean endDateMatches = true;
             boolean descriptionMatches = true;
             boolean vendorMatches = true;
-            boolean amountMatches = true;
+            boolean minAmountMatches = true;
+            boolean maxAmountMatches = true;
 
-            if(!startDate.isEmpty() && !transaction.getDate().isAfter(LocalDate.parse(startDate))){
+            // FIXED: inclusive date range
+            if (!startDate.isEmpty() && transaction.getDate().isBefore(LocalDate.parse(startDate))) {
                 startDateMatches = false;
             }
 
-            if(!endDate.isEmpty() && !transaction.getDate().isBefore(LocalDate.parse(endDate))){
+            if (!endDate.isEmpty() && transaction.getDate().isAfter(LocalDate.parse(endDate))) {
                 endDateMatches = false;
             }
-            if(!description.isEmpty() && !transaction.getDescription().equalsIgnoreCase(description)){
-                amountMatches = false;
-            }
-            if(!vendor.isEmpty() && !transaction.getVendor().equalsIgnoreCase(vendor)){
-                vendorMatches = false;
-            }
-            if(!amount.isEmpty() && transaction.getAmount() != Double.parseDouble(amount)){
+
+            if (!description.isEmpty() && !transaction.getDescription().equalsIgnoreCase(description)) {
                 descriptionMatches = false;
             }
 
-
-
-            if (startDateMatches && endDateMatches && descriptionMatches && vendorMatches && amountMatches){
-                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
-                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
-                        + ", amount: $" + transaction.getAmount() + "]");
+            if (!vendor.isEmpty() && !transaction.getVendor().equalsIgnoreCase(vendor)) {
+                vendorMatches = false;
             }
 
+            if (!minAmount.isEmpty() && transaction.getAmount() < Double.parseDouble(minAmount)) {
+                minAmountMatches = false;
+            }
+
+            if (!maxAmount.isEmpty() && transaction.getAmount() > Double.parseDouble(maxAmount)) {
+                maxAmountMatches = false;
+            }
+
+            if (startDateMatches && endDateMatches && descriptionMatches &&
+                    vendorMatches && minAmountMatches && maxAmountMatches) {
+
+                double amount = transaction.getAmount();
+
+                // Totals
+                if (amount > 0) totalIncome += amount;
+                else totalExpenses += amount;
+
+                // Table row
+                System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
+                        transaction.getDate(),
+                        transaction.getTime(),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        colorAmount(amount),
+                        amount);
+            }
         }
-        System.out.println("My custom report");
 
+        double net = totalIncome + totalExpenses;
 
-
+        // Footer
+        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-85s $%10.2f%n", "Total Income:", totalIncome);
+        System.out.printf("%-85s $%10.2f%n", "Total Expenses:", totalExpenses);
+        System.out.printf("%-85s $%10.2f%n", "Net Balance:", net);
+        System.out.println("==========================================================================================================\n");
     }
 
-//    1. On the reports screen add another option for a custom search. Prompt the user
-//for search values for all ledger entry properties.
-//o 6) Custom Search - prompt the user for the following search values.
-//        ▪ Start Date
-//▪ End Date
-//▪ Description
-//▪ Vendor
-//▪ Amount
-//o If the user enters a value for a field you should filter on that field
-//o If the user does not enter a value, you should not filter on that field
+
 
     private static void displayByVendor() {
 
-        System.out.println("Enter the vendor you want a report on: ");
+        System.out.print("Enter the vendor you want a report on: ");
         String vendor = input.nextLine();
 
+        double totalIncome = 0;
+        double totalExpenses = 0;
+
+        // Header
+        System.out.println("\n==========================================================================================================");
+        System.out.println("                              VENDOR STATEMENT (" + vendor.toUpperCase() + ")");
+        System.out.println("==========================================================================================================");
+
+        // SAME spacing as all your other reports
+        System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+
+        System.out.println("----------------------------------------------------------------------------------------------------------");
 
         Collections.sort(transactionsList);
-        for(Transaction transaction: transactionsList){
+
+        for (Transaction transaction : transactionsList) {
             if (transaction.getVendor().equalsIgnoreCase(vendor)) {
-                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
-                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
-                        + ", amount: $" + transaction.getAmount() + "]");
+
+                double amount = transaction.getAmount();
+
+                // Totals
+                if (amount > 0) totalIncome += amount;
+                else totalExpenses += amount;
+
+                // SAME formatting + color
+                System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
+                        transaction.getDate(),
+                        transaction.getTime(),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        colorAmount(amount),
+                        amount);
             }
         }
+
+        double net = totalIncome + totalExpenses;
+
+        // Footer
+        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-85s $%10.2f%n", "Total Income:", totalIncome);
+        System.out.printf("%-85s $%10.2f%n", "Total Expenses:", totalExpenses);
+        System.out.printf("%-85s $%10.2f%n", "Net Balance:", net);
+        System.out.println("==========================================================================================================\n");
     }
+
+
 
     private static void displayPreviousYearReport() {
 
-        System.out.println("Enter the year you want a report on: ");
+        System.out.print("Enter the year you want a report on: ");
         int year = input.nextInt();
+        input.nextLine(); // clear buffer
 
-        LocalTime currentTime = getCurrentLocalTime();
-        LocalDate currentDate = LocalDate.from(LocalDateTime.now());
+        double totalIncome = 0;
+        double totalExpenses = 0;
 
-        int currentMonth = currentDate.getMonthValue();
-        int currentYear  = currentDate.getYear();
+        System.out.println("\n==========================================================================================================");
+        System.out.println("                                      YEARLY STATEMENT (" + year + ")");
+        System.out.println("==========================================================================================================");
 
+        System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+
+        System.out.println("----------------------------------------------------------------------------------------------------------");
 
         Collections.sort(transactionsList);
-        for(Transaction transaction: transactionsList){
-            if (transaction.getDate().getYear() == year ) {
-                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
-                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
-                        + ", amount: $" + transaction.getAmount() + "]");
+
+        for (Transaction transaction : transactionsList) {
+            if (transaction.getDate().getYear() == year) {
+
+                double amount = transaction.getAmount();
+
+                if (amount > 0) totalIncome += amount;
+                else totalExpenses += amount;
+
+                System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
+                        transaction.getDate(),
+                        transaction.getTime(),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        colorAmount(amount),
+                        amount);
             }
         }
+
+        double net = totalIncome + totalExpenses;
+
+        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-85s $%10.2f%n", "Total Income:", totalIncome);
+        System.out.printf("%-85s $%10.2f%n", "Total Expenses:", totalExpenses);
+        System.out.printf("%-85s $%10.2f%n", "Net Balance:", net);
+        System.out.println("==========================================================================================================\n");
     }
+
 
     private static void displayYearToDateReport() {
-        LocalTime currentTime = getCurrentLocalTime();
-        LocalDate currentDate = LocalDate.from(LocalDateTime.now());
 
-        int currentMonth = currentDate.getMonthValue();
-        int currentYear  = currentDate.getYear();
+        LocalDate currentDate = LocalDate.now();
+        int currentYear = currentDate.getYear();
 
+        double totalIncome = 0;
+        double totalExpenses = 0;
+
+        // Header
+        System.out.println("\n==========================================================================================================");
+        System.out.println("                                      YEAR TO DATE STATEMENT");
+        System.out.println("                                      January - " + currentDate);
+        System.out.println("==========================================================================================================");
+
+        // SAME spacing as your other table
+        System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+
+        System.out.println("----------------------------------------------------------------------------------------------------------");
 
         Collections.sort(transactionsList);
-        for(Transaction transaction: transactionsList){
+
+        for (Transaction transaction : transactionsList) {
             if (transaction.getDate().getYear() == currentYear) {
-                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
-                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
-                        + ", amount: $" + transaction.getAmount() + "]");
+
+                double amount = transaction.getAmount();
+
+                // Totals
+                if (amount > 0) totalIncome += amount;
+                else totalExpenses += amount;
+
+                // SAME formatting as your other loop
+                System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
+                        transaction.getDate(),
+                        transaction.getTime(),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        colorAmount(amount),
+                        amount);
             }
         }
 
+        double net = totalIncome + totalExpenses;
 
+        // Footer aligned with same width
+        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-85s $%10.2f%n", "Total Income:", totalIncome);
+        System.out.printf("%-85s $%10.2f%n", "Total Expenses:", totalExpenses);
+        System.out.printf("%-85s $%10.2f%n", "Net Balance:", net);
+        System.out.println("==========================================================================================================\n");
     }
+
+
 
     private static void displayPreviousMonthReport() {
-        System.out.println("Enter the month you want a report on: ");
+
+        System.out.print("Enter the month (1-12): ");
         int month = input.nextInt();
 
-        System.out.println("Enter the year you want a report on: ");
+        System.out.print("Enter the year: ");
         int year = input.nextInt();
+        input.nextLine(); // clear buffer
 
-        LocalTime currentTime = getCurrentLocalTime();
-        LocalDate currentDate = LocalDate.from(LocalDateTime.now());
+        double totalIncome = 0;
+        double totalExpenses = 0;
 
-        int currentMonth = currentDate.getMonthValue();
-        int currentYear  = currentDate.getYear();
+        // Header
+        System.out.println("\n==========================================================================================================");
+        System.out.println("                          MONTHLY STATEMENT (" + month + "/" + year + ")");
+        System.out.println("==========================================================================================================");
 
+        // SAME spacing as your other tables
+        System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+
+        System.out.println("----------------------------------------------------------------------------------------------------------");
 
         Collections.sort(transactionsList);
-        for(Transaction transaction: transactionsList){
-            if (transaction.getDate().getYear() == year && transaction.getDate().getMonthValue() == month) {
-                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
-                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
-                        + ", amount: $" + transaction.getAmount() + "]");
+
+        for (Transaction transaction : transactionsList) {
+            if (transaction.getDate().getYear() == year &&
+                    transaction.getDate().getMonthValue() == month) {
+
+                double amount = transaction.getAmount();
+
+                // Totals
+                if (amount > 0) totalIncome += amount;
+                else totalExpenses += amount;
+
+                // SAME formatting
+                System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
+                        transaction.getDate(),
+                        transaction.getTime(),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        colorAmount(amount),
+                        amount);
             }
         }
+
+        double net = totalIncome + totalExpenses;
+
+        // Footer
+        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-85s $%10.2f%n", "Total Income:", totalIncome);
+        System.out.printf("%-85s $%10.2f%n", "Total Expenses:", totalExpenses);
+        System.out.printf("%-85s $%10.2f%n", "Net Balance:", net);
+        System.out.println("==========================================================================================================\n");
     }
 
-    private static void displayMonthToDateReport() {
-        LocalTime currentTime = getCurrentLocalTime();
-        LocalDate currentDate = LocalDate.from(LocalDateTime.now());
 
+
+    private static void displayMonthToDateReport() {
+
+        LocalDate currentDate = LocalDate.now();
         int currentMonth = currentDate.getMonthValue();
         int currentYear  = currentDate.getYear();
 
+        double totalIncome = 0;
+        double totalExpenses = 0;
+
+        // Header
+        System.out.println("\n==========================================================================================================");
+        System.out.println("                          MONTH TO DATE STATEMENT");
+        System.out.println("                          " + currentDate.getMonth() + " " + currentYear);
+        System.out.println("==========================================================================================================");
+
+        // SAME spacing as your other tables
+        System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+
+        System.out.println("----------------------------------------------------------------------------------------------------------");
 
         Collections.sort(transactionsList);
-        for(Transaction transaction: transactionsList){
-            if (transaction.getDate().getYear() == currentYear && transaction.getDate().getMonthValue() == currentMonth) {
-                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
-                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
-                        + ", amount: $" + transaction.getAmount() + "]");
+
+        for (Transaction transaction : transactionsList) {
+            if (transaction.getDate().getYear() == currentYear &&
+                    transaction.getDate().getMonthValue() == currentMonth) {
+
+                double amount = transaction.getAmount();
+
+
+                if (amount > 0) totalIncome += amount;
+                else totalExpenses += amount;
+
+
+                System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
+                        transaction.getDate(),
+                        transaction.getTime(),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        colorAmount(amount),
+                        amount);
             }
         }
 
+        double net = totalIncome + totalExpenses;
 
-
-        System.out.println("=== Month To Date Report ====");
-        double totalPayments = 0;
-        double totalDeposits = 0;
-
-
-
+        // Footer
+        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-85s $%10.2f%n", "Total Income:", totalIncome);
+        System.out.printf("%-85s $%10.2f%n", "Total Expenses:", totalExpenses);
+        System.out.printf("%-85s $%10.2f%n", "Net Balance:", net);
+        System.out.println("==========================================================================================================\n");
     }
 
 
     private static void displayPayments() {
         Collections.sort(transactionsList);
-        for(Transaction transaction: transactionsList){
+
+        System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+
+        System.out.println("----------------------------------------------------------------------------------------------------------");
+
+
+        for (Transaction transaction : transactionsList) {
             if (transaction.getAmount() < 0) {
-                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
-                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
-                        + ", amount: $" + transaction.getAmount() + "]");
+
+                double amount = transaction.getAmount();
+
+                System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
+                        transaction.getDate(),
+                        transaction.getTime(),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        colorAmount(amount),
+                        amount);
             }
         }
     }
@@ -388,11 +590,25 @@ public class App  {
     private static void displayDeposits() {
         Collections.sort(transactionsList);
 
-        for(Transaction transaction: transactionsList){
+
+        System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+
+        System.out.println("----------------------------------------------------------------------------------------------------------");
+
+
+        for (Transaction transaction : transactionsList) {
             if (transaction.getAmount() > 0) {
-                System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
-                        + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
-                        + ", amount: $" + transaction.getAmount() + "]");
+
+                double amount = transaction.getAmount();
+
+                System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
+                        transaction.getDate(),
+                        transaction.getTime(),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        colorAmount(amount),
+                        amount);
             }
         }
 
@@ -400,25 +616,34 @@ public class App  {
 
     private static void displayAllEntries(){
         Collections.sort(transactionsList);
-        for(Transaction transaction: transactionsList){
-            System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
-                    + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
-                    + ", amount: $" + transaction.getAmount() + "]");
+//        for(Transaction transaction: transactionsList){
+//            System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
+//                    + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
+//                    + ", amount: $" + transaction.getAmount() + "]");
+//        }
+
+        for (Transaction transaction : transactionsList) {
+
+            double amount = transaction.getAmount();
+
+            System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
+                    transaction.getDate(),
+                    transaction.getTime(),
+                    transaction.getDescription(),
+                    transaction.getVendor(),
+                    colorAmount(amount),
+                    amount);
         }
 
     }
 
+    private static String colorAmount(double amount) {
+        if (amount > 0) return "\u001B[32m"; // green
+        if (amount < 0) return "\u001B[31m"; // red
+        return "\u001B[0m"; // default
+    }
 
 
-
-
-    //• Ledger - All entries should show the newest entries first
-//o A) All - Display all entries
-//o D) Deposits - Display only the entries that are deposits into the account
-//o P) Payments - Display only the negative entries (or payments)
-
-//▪ 0) Back - go back to the Ledger page
-//o H) Home - go back to the home page
 
     private static void runAddDepositScreen() {
         System.out.println("Enter the amount to deposit: ");
@@ -501,78 +726,3 @@ public class App  {
 
 
 
-
-
-
-
-
-
-//Description
-//In this project, you will use what you have learned about Java programming to create a
-//CLI application. With this application you can track all financial transactions for a
-//business or for personal use.
-//All transactions in the application should be read from and saved to a transaction file
-//named transactions.csv. Each transaction should be saved as a single line with
-//the following format.
-//        date|time|description|vendor|amount
-//2023-04-15|10:13:25|ergonomic keyboard|Amazon|-89.50
-//        2023-04-15|11:15:00|Invoice 1001 paid|Joe|1500.00
-//        3
-
-//Application Requirements
-//Your application must include several screens with the listed features in order to be
-//considered complete:
-//        • Home Screen
-//o The home screen should give the user the following options. The
-//application should continue to run until the user chooses to exit.
-//        ▪ D) Add Deposit - prompt user for the deposit information and save it
-//to the csv file
-//▪ P) Make Payment (Debit) - prompt user for the debit information
-//and save it to the csv file
-//▪ L) Ledger - display the ledger screen
-//▪ X) Exit - exit the application
-
-
-
-
-
-
-//4
-//Bonus and Presentations
-//Challenge Yourself
-//If you have time and want to challenge yourself, consider the following:
-//        1. On the reports screen add another option for a custom search. Prompt the user
-//for search values for all ledger entry properties.
-//o 6) Custom Search - prompt the user for the following search values.
-//        ▪ Start Date
-//▪ End Date
-//▪ Description
-//▪ Vendor
-//▪ Amount
-//o If the user enters a value for a field you should filter on that field
-//o If the user does not enter a value, you should not filter on that field
-
-
-//2. Customize your app
-//o Trick out your console app by giving it a unique app name, starter screen
-//o You can even make your transactions look like it’s a part of your unique app
-//o Some examples: Restaurant Sales/Purchases, Record Store Sales/Purchases,
-//Clothing Store Sales/Purchases
-
-
-//Other Requirements
-//Your project must also meet the following requirements:
-//        • Your code must be in a public GitHub repository
-//• The repository must contain an appropriate Git commit history
-//o At a minimum, you should have a commit for each meaningful piece of
-//work completed
-//• It must contain an informative README file that:
-//o Describes your project
-//o Includes description for how to run the project
-//Class Demonstrations
-//Each student will be given 10 minutes to demonstrate their project to the class on
-//"project demonstration day". During this time, you will:
-//        • Present your application - run through the different screens and scenarios
-//5
-//        • Describe / show one interesting piece of code that you wrote
-//• Answer questions from the audience if time permit
