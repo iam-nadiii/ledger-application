@@ -19,7 +19,7 @@ public class App  {
 
 
     public static void main(String[] args) {
-        boolean systemIsRunning = true;
+
         LocalDate currentDate = LocalDate.from(LocalDateTime.now());
 
 
@@ -72,7 +72,6 @@ public class App  {
     private static void runHomeScreen() {
         boolean systemIsRunning = true;
 
-
         do {
             System.out.println("""
         ==================================================
@@ -90,8 +89,7 @@ public class App  {
         Enter choice:
         """);
 
-            char userChoice = input.next().toUpperCase().charAt(0);
-            input.nextLine();
+            char userChoice = input.nextLine().toUpperCase().charAt(0);
 
             switch (userChoice) {
                 case 'D', 'd':
@@ -102,10 +100,7 @@ public class App  {
                     break;
                 case 'L', 'l':
                     runLedgerScreen();
-                    System.out.println("Thanks for using our services!");
-                    System.out.println("System exiting now.");
-                    systemIsRunning = false;
-                    return;
+                    break;
                 case 'X', 'x':
                     System.out.println("Thanks for using our services!");
                     System.out.println("System exiting now.");
@@ -139,8 +134,7 @@ public class App  {
         --------------------------------------------------
         Enter choice: """);
 
-            char userChoice = input.next().charAt(0);
-            input.nextLine();
+            char userChoice = input.nextLine().charAt(0);
 
             switch (userChoice) {
                 case 'A', 'a':
@@ -156,8 +150,7 @@ public class App  {
                     showReportsMenu();
                     break;
                 case 'H', 'h':
-                    runHomeScreen();
-                    break;
+                    return;
                 default:
                     System.out.println("Wrong input. Try again.");
             }
@@ -184,8 +177,7 @@ public class App  {
         Enter choice:
         """);
 
-        char userChoice = input.next().charAt(0);
-        input.nextLine();
+        char userChoice = input.nextLine().charAt(0);
 
         switch (userChoice) {
             case '1':
@@ -649,11 +641,6 @@ public class App  {
 
     private static void displayAllEntries(){
         Collections.sort(transactionsList);
-//        for(Transaction transaction: transactionsList){
-//            System.out.println("[Date: " + transaction.getDate() + ", time: " + transaction.getTime()
-//                    + ", description: " + transaction.getDescription() + ", vendor: " + transaction.getVendor()
-//                    + ", amount: $" + transaction.getAmount() + "]");
-//        }
 
         for (Transaction transaction : transactionsList) {
 
@@ -680,7 +667,7 @@ public class App  {
 
     private static void runAddDepositScreen() {
         System.out.println("Enter the amount to deposit: ");
-        double payment = input.nextDouble();
+        double payment = Math.abs(input.nextDouble());
 
         System.out.println("Enter the name of source of income: ");
         String vendor = input.next();
@@ -708,7 +695,7 @@ public class App  {
 
     private static void runMakePaymentScreen() {
         System.out.println("Enter the amount to pay: ");
-        double payment = input.nextDouble() * -1;
+        double payment = Math.abs(input.nextDouble()) * -1;
 
         System.out.println("Enter the name of the vendor: ");
         String vendor = input.next();

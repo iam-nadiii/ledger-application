@@ -59,7 +59,7 @@ public class Transaction implements Comparable<Transaction> {
             return dateCompare;
         }
 
-        return this.time.compareTo(other.time);
+        return other.time.compareTo(this.time);
     }
 
 
