@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.time.*;
 
@@ -25,11 +26,10 @@ public class App  {
 
         System.out.println(getCurrentLocalTime());
 
-        try {
-            extractFile("transactions.csv");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
+        extractFile("transactions.csv");
+
+
         runHomeScreen();
 
 
@@ -45,28 +45,32 @@ public class App  {
         return fullyFormattedTime;
     }
 
-    private static void extractFile(String fileName) throws IOException {
-        FileReader fileReader = new FileReader(fileName);
-        BufferedReader bufferedReader = new BufferedReader(fileReader);
+    private static void extractFile(String fileName) {
+
+        try {
+            FileReader fileReader = new FileReader(fileName);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
 
 
+            String input;
+            bufferedReader.readLine();
 
-        String input;
-        bufferedReader.readLine();
+            while ((input = bufferedReader.readLine()) != null) {
+                String[] transactionAttributes = input.split("\\|");
+                Transaction currentTransaction = new Transaction();
+                currentTransaction.setDate(LocalDate.parse(transactionAttributes[0]));
+                currentTransaction.setTime(LocalTime.parse(transactionAttributes[1]));
+                currentTransaction.setDescription(transactionAttributes[2]);
+                currentTransaction.setVendor(transactionAttributes[3]);
+                currentTransaction.setAmount(parseDouble(transactionAttributes[4]));
+                transactionsList.add(currentTransaction);
+            }
+            Collections.sort(transactionsList);
 
-        while((input = bufferedReader.readLine()) != null) {
-            String[] transactionAttributes = input.split("\\|");
-            Transaction currentTransaction = new Transaction();
-            currentTransaction.setDate(LocalDate.parse(transactionAttributes[0]));
-            currentTransaction.setTime(LocalTime.parse(transactionAttributes[1]));
-            currentTransaction.setDescription(transactionAttributes[2]);
-            currentTransaction.setVendor(transactionAttributes[3]);
-            currentTransaction.setAmount(parseDouble(transactionAttributes[4]));
-            transactionsList.add(currentTransaction);
+            bufferedReader.close();
+        } catch (IOException e){
+            e.printStackTrace();
         }
-        Collections.sort(transactionsList);
-
-        bufferedReader.close();
     }
 
     private static void runHomeScreen() {
@@ -196,7 +200,7 @@ public class App  {
                 displayByVendor();
                 break;
             case '6':
-                displayCutsomReport();
+                displayCustomReport();
                 break;
             default:
                 System.out.println("Wrong input. Try again.");
@@ -205,7 +209,7 @@ public class App  {
 
     }
 
-    private static void displayCutsomReport() {
+    private static void displayCustomReport() {
         System.out.println("=== Custom Search === ");
 
         System.out.println("Enter start date (yyyy-MM-dd): ");
@@ -642,6 +646,13 @@ public class App  {
     private static void displayAllEntries(){
         Collections.sort(transactionsList);
 
+        System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+
+        System.out.println("----------------------------------------------------------------------------------------------------------");
+
+
+
         for (Transaction transaction : transactionsList) {
 
             double amount = transaction.getAmount();
@@ -666,8 +677,23 @@ public class App  {
 
 
     private static void runAddDepositScreen() {
-        System.out.println("Enter the amount to deposit: ");
-        double payment = Math.abs(input.nextDouble());
+        boolean invalidInput = false;
+        double deposit = 0;
+
+        while(!invalidInput){
+            try {
+                System.out.println("Enter the amount to deposit: ");
+                deposit = Math.abs(input.nextDouble());
+                input.nextLine();
+
+                invalidInput = true;
+            } catch (InputMismatchException e){
+                System.out.println("ERROR: Invalid input. Please enter a valid number to be recorded as amount");
+                input.nextLine();
+            }
+
+        }
+
 
         System.out.println("Enter the name of source of income: ");
         String vendor = input.next();
@@ -685,7 +711,7 @@ public class App  {
         currentTransaction.setTime(timeOfTranasaction);
         currentTransaction.setDescription(description);
         currentTransaction.setVendor(vendor);
-        currentTransaction.setAmount(payment);
+        currentTransaction.setAmount(deposit);
         transactionsList.add(currentTransaction);
 
         addTransactionToFile(currentTransaction);
@@ -694,14 +720,29 @@ public class App  {
     }
 
     private static void runMakePaymentScreen() {
-        System.out.println("Enter the amount to pay: ");
-        double payment = Math.abs(input.nextDouble()) * -1;
+        double payment = 0;
+        boolean validInput = false;
+
+        while(!validInput) {
+            try {
+                System.out.println("Enter the amount to pay: ");
+                payment = Math.abs(input.nextDouble()) * -1;
+                input.nextLine();
+
+                validInput = true;
+
+            } catch (InputMismatchException e) {
+                System.out.println("ERROR: Invalid input. Please enter a valid number to be recorded as amount");
+                input.nextLine();
+            }
+        }
+
 
         System.out.println("Enter the name of the vendor: ");
         String vendor = input.next();
 
         input.nextLine();
-        System.out.println("Enter payment description: ");
+        System.out.println("Enter expense description: ");
         String description = input.nextLine();
 
         LocalTime timeOfTranasaction = getCurrentLocalTime();
