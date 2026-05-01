@@ -4,10 +4,7 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.util.*;
 import java.time.*;
 
 import static java.lang.Double.*;
@@ -15,7 +12,8 @@ import static java.lang.Double.*;
 
 public class App  {
     static Scanner input = new Scanner(System.in);
-    static ArrayList<Transaction> transactionsList = new ArrayList<>();
+    static ArrayList<Transaction> transactions = new ArrayList<>();
+    static ArrayList<Search> searches = new ArrayList<>();
 
 
 
@@ -27,7 +25,8 @@ public class App  {
         System.out.println(getCurrentLocalTime());
 
 
-        extractFile("transactions.csv");
+        extractTransactionsFile("transactions.csv");
+        extractSearchesFile("searches.csv");
 
 
         runHomeScreen();
@@ -45,7 +44,7 @@ public class App  {
         return fullyFormattedTime;
     }
 
-    private static void extractFile(String fileName) {
+    private static void extractTransactionsFile(String fileName) {
 
         try {
             FileReader fileReader = new FileReader(fileName);
@@ -63,9 +62,9 @@ public class App  {
                 currentTransaction.setDescription(transactionAttributes[2]);
                 currentTransaction.setVendor(transactionAttributes[3]);
                 currentTransaction.setAmount(parseDouble(transactionAttributes[4]));
-                transactionsList.add(currentTransaction);
+                transactions.add(currentTransaction);
             }
-            Collections.sort(transactionsList);
+            Collections.sort(transactions);
 
             bufferedReader.close();
         } catch (IOException e){
@@ -87,6 +86,7 @@ public class App  {
             (D)  Add Deposit
             (P)  Make Payment
             (L)  View Ledger
+            (E)  Edit/Delete Transaction
             (X)  Exit Application
 
         --------------------------------------------------
@@ -105,6 +105,9 @@ public class App  {
                 case 'L', 'l':
                     runLedgerScreen();
                     break;
+//                case 'E', 'e':
+//                    editOrDeleteTransaction();
+//                    break;
                 case 'X', 'x':
                     System.out.println("Thanks for using our services!");
                     System.out.println("System exiting now.");
@@ -116,6 +119,9 @@ public class App  {
         } while (systemIsRunning);
 
     }
+
+//    private static void editOrDeleteTransaction() {
+//    }
 
     private static void runLedgerScreen() {
 
@@ -176,6 +182,8 @@ public class App  {
             4)  Previous Year
             5)  Search by Vendor
             6)  Run a Custom Search
+            7)  Display Past Searches
+            0)  Back to the Ledger Page
 
         --------------------------------------------------
         Enter choice:
@@ -202,10 +210,72 @@ public class App  {
             case '6':
                 displayCustomReport();
                 break;
+            case '7':
+                displayPastSearches();
+                break;
+            case '0':
+                return;
             default:
                 System.out.println("Wrong input. Try again.");
         }
 
+
+    }
+
+    private static void displayPastSearches() {
+        int totalWidth = 121;
+        String border = "═".repeat(totalWidth);
+        String separator = "-".repeat(totalWidth);
+
+
+        String title = "📊 PAST SEARCHES";
+        int padding = (totalWidth - title.length()) / 2;
+
+        System.out.println("\n" + border);
+        System.out.println(" ".repeat(padding) + title);
+        System.out.println(border);
+
+
+        System.out.printf("\u001B[34m%-5s\u001B[0m %-14s %-12s %-12s %-12s %-20s %-18s %-10s %-10s%n",
+                "ID", "Search-Date", "Search-Time", "Start", "End", "Description", "Vendor", "Min", "Max");
+
+        System.out.println(separator);
+
+        int index = 1;
+
+        for (Search search : searches) {
+            System.out.printf("\u001B[35m%-5d\u001B[0m %-14s %-12s %-12s %-12s %-20s %-18s %-10s %-10s%n",
+                    index++,
+                    search.getSearchDate(),
+                    search.getSearchTime(),
+                    search.getStartDate(),
+                    search.getEndDate(),
+                    search.getDescription(),
+                    search.getVendor(),
+                    search.getMinAmount(),
+                    search.getMaxAmount()
+            );
+        }
+
+
+        System.out.println("-------------------------------------------------------------------------------------------------------------------------");
+        System.out.print("\n👉 Enter the \u001B[35mID\u001B[0m of the search you want to reuse: ");
+        int searchID = Integer.parseInt(input.nextLine());
+
+        int searchIndex = searchID - 1;
+
+
+        Search currentSearch = searches.get(searchIndex);
+
+        String startDate = currentSearch.getStartDate();
+        String endDate = currentSearch.getEndDate();
+        String description = currentSearch.getDescription();
+        String vendor = currentSearch.getVendor();
+        String minAmount = currentSearch.getMinAmount();
+        String maxAmount = currentSearch.getMaxAmount();
+
+        createCustomReport(startDate, endDate, description, vendor, minAmount, maxAmount);
+        recordCurrentSearch(startDate, endDate, maxAmount, minAmount, description, vendor);
 
     }
 
@@ -224,13 +294,97 @@ public class App  {
         System.out.println("Enter vendor: ");
         String vendor = input.nextLine();
 
-        System.out.println("Enter mininum amount: ");
+        System.out.println("Enter minimum amount: ");
         String minAmount = input.nextLine();
 
         System.out.println("Enter maximum amount: ");
         String maxAmount = input.nextLine();
 
         createCustomReport(startDate, endDate, description, vendor, minAmount, maxAmount);
+
+        recordCurrentSearch(startDate, endDate, maxAmount, minAmount, description, vendor);
+
+    }
+
+    private static void recordCurrentSearch(String startDate, String endDate, String maxAmount, String minAmount, String description, String vendor) {
+        Search currentSearch = new Search();
+
+        currentSearch.setSearchTime(getCurrentLocalTime());
+        currentSearch.setSearchDate(LocalDate.from(LocalDateTime.now()));
+        currentSearch.setStartDate(startDate);
+        currentSearch.setEndDate(endDate);
+        currentSearch.setMaxAmount(maxAmount);
+        currentSearch.setMinAmount(minAmount);
+        currentSearch.setDescription(description);
+        currentSearch.setVendor(vendor);
+
+        searches.add(currentSearch);
+
+        addSearchToFile(currentSearch);
+    }
+
+    private static void addSearchToFile(Search currentSearch) {
+        String searchedStartDate = currentSearch.getStartDate();
+        String searchedEndDate = currentSearch.getEndDate();
+        String searchedMaxAmount = currentSearch.getMaxAmount();
+        String searchedMinAmount = currentSearch.getMinAmount();
+        String searchedDescription = currentSearch.getDescription();
+        String searchedVendor = currentSearch.getVendor();
+
+        searchedStartDate = searchedStartDate.isEmpty()?  "N/A": searchedStartDate;
+        searchedEndDate = searchedEndDate.isEmpty()?  "N/A": searchedEndDate;
+        searchedMaxAmount = searchedMaxAmount.isEmpty()?  "N/A": searchedMaxAmount;
+        searchedMinAmount = searchedMinAmount.isEmpty()?  "N/A": searchedMinAmount;
+        searchedDescription = searchedDescription.isEmpty()?  "N/A": searchedDescription;
+        searchedVendor = searchedVendor.isEmpty()?  "N/A": searchedVendor;
+
+        try{
+            FileWriter fileWriter = new FileWriter("searches.csv", true);
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+            bufferedWriter.write("\n" + currentSearch.getSearchDate() +  "|" + currentSearch.getSearchTime() + "|" +
+                    searchedStartDate + "|" + searchedEndDate + "|" + searchedDescription
+            + "|" + searchedVendor + "|" + searchedMinAmount + "|" + searchedMaxAmount);
+            bufferedWriter.close();
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+
+    private static void extractSearchesFile(String fileName){
+        try {
+            FileReader fileReader = new FileReader(fileName);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+
+
+            String input;
+            bufferedReader.readLine();
+
+            while ((input = bufferedReader.readLine()) != null) {
+                String[] searchAttributes = input.split("\\|");
+                Search currentSearch = new Search();
+                //            search-date|search-time|start-date|end-date|description|vendor|min-amount|max-amount
+                currentSearch.setSearchDate(LocalDate.parse(searchAttributes[0]));
+                currentSearch.setSearchTime(LocalTime.parse(searchAttributes[1]));
+                currentSearch.setStartDate(searchAttributes[2]);
+                currentSearch.setEndDate(searchAttributes[3]);
+                currentSearch.setDescription(searchAttributes[4]);
+                currentSearch.setVendor(searchAttributes[5]);
+                currentSearch.setMinAmount(searchAttributes[6]);
+                currentSearch.setMaxAmount(searchAttributes[7]);
+
+                searches.add(currentSearch);
+
+
+            }
+            Collections.sort(searches);
+
+            bufferedReader.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
 
 
     }
@@ -251,9 +405,9 @@ public class App  {
 
         System.out.println("----------------------------------------------------------------------------------------------------------");
 
-        Collections.sort(transactionsList);
+        Collections.sort(transactions);
 
-        for (Transaction transaction : transactionsList) {
+        for (Transaction transaction : transactions) {
 
             boolean startDateMatches = true;
             boolean endDateMatches = true;
@@ -263,19 +417,19 @@ public class App  {
             boolean maxAmountMatches = true;
 
             // FIXED: inclusive date range
-            if (!startDate.isEmpty() && transaction.getDate().isBefore(LocalDate.parse(startDate))) {
+            if (!startDate.equals("N/A") && !startDate.isEmpty() && transaction.getDate().isBefore(LocalDate.parse(startDate))) {
                 startDateMatches = false;
             }
 
-            if (!endDate.isEmpty() && transaction.getDate().isAfter(LocalDate.parse(endDate))) {
+            if (!endDate.equals("N/A") && !endDate.isEmpty() && transaction.getDate().isAfter(LocalDate.parse(endDate))) {
                 endDateMatches = false;
             }
 
-            if (!description.isEmpty() && !transaction.getDescription().equalsIgnoreCase(description)) {
+            if (!description.equals("N/A") && !description.isEmpty() && !transaction.getDescription().equalsIgnoreCase(description)) {
                 descriptionMatches = false;
             }
 
-            if (!vendor.isEmpty() && !transaction.getVendor().equalsIgnoreCase(vendor)) {
+            if (!vendor.equals("N/A") && !vendor.isEmpty() && !transaction.getVendor().equalsIgnoreCase(vendor)) {
                 vendorMatches = false;
             }
 //            if (!vendor.isEmpty() &&
@@ -283,11 +437,11 @@ public class App  {
 //                vendorMatches = false;
 //            }
 
-            if (!minAmount.isEmpty() && transaction.getAmount() < Double.parseDouble(minAmount)) {
+            if (!minAmount.equals("N/A") && !minAmount.isEmpty() && transaction.getAmount() < Double.parseDouble(minAmount)) {
                 minAmountMatches = false;
             }
 
-            if (!maxAmount.isEmpty() && transaction.getAmount() > Double.parseDouble(maxAmount)) {
+            if (!maxAmount.equals("N/A") && !maxAmount.isEmpty() && transaction.getAmount() > Double.parseDouble(maxAmount)) {
                 maxAmountMatches = false;
             }
 
@@ -342,9 +496,9 @@ public class App  {
 
         System.out.println("----------------------------------------------------------------------------------------------------------");
 
-        Collections.sort(transactionsList);
+        Collections.sort(transactions);
 
-        for (Transaction transaction : transactionsList) {
+        for (Transaction transaction : transactions) {
             if (transaction.getVendor().equalsIgnoreCase(vendor)) {
 
                 double amount = transaction.getAmount();
@@ -394,9 +548,9 @@ public class App  {
 
         System.out.println("----------------------------------------------------------------------------------------------------------");
 
-        Collections.sort(transactionsList);
+        Collections.sort(transactions);
 
-        for (Transaction transaction : transactionsList) {
+        for (Transaction transaction : transactions) {
             if (transaction.getDate().getYear() == year) {
 
                 double amount = transaction.getAmount();
@@ -444,9 +598,9 @@ public class App  {
 
         System.out.println("----------------------------------------------------------------------------------------------------------");
 
-        Collections.sort(transactionsList);
+        Collections.sort(transactions);
 
-        for (Transaction transaction : transactionsList) {
+        for (Transaction transaction : transactions) {
             if (transaction.getDate().getYear() == currentYear) {
 
                 double amount = transaction.getAmount();
@@ -501,9 +655,9 @@ public class App  {
 
         System.out.println("----------------------------------------------------------------------------------------------------------");
 
-        Collections.sort(transactionsList);
+        Collections.sort(transactions);
 
-        for (Transaction transaction : transactionsList) {
+        for (Transaction transaction : transactions) {
             if (transaction.getDate().getYear() == year &&
                     transaction.getDate().getMonthValue() == month) {
 
@@ -557,9 +711,9 @@ public class App  {
 
         System.out.println("----------------------------------------------------------------------------------------------------------");
 
-        Collections.sort(transactionsList);
+        Collections.sort(transactions);
 
-        for (Transaction transaction : transactionsList) {
+        for (Transaction transaction : transactions) {
             if (transaction.getDate().getYear() == currentYear &&
                     transaction.getDate().getMonthValue() == currentMonth) {
 
@@ -592,7 +746,7 @@ public class App  {
 
 
     private static void displayPayments() {
-        Collections.sort(transactionsList);
+        Collections.sort(transactions);
 
         System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
@@ -600,7 +754,7 @@ public class App  {
         System.out.println("----------------------------------------------------------------------------------------------------------");
 
 
-        for (Transaction transaction : transactionsList) {
+        for (Transaction transaction : transactions) {
             if (transaction.getAmount() < 0) {
 
                 double amount = transaction.getAmount();
@@ -617,7 +771,7 @@ public class App  {
     }
 
     private static void displayDeposits() {
-        Collections.sort(transactionsList);
+        Collections.sort(transactions);
 
 
         System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
@@ -626,7 +780,7 @@ public class App  {
         System.out.println("----------------------------------------------------------------------------------------------------------");
 
 
-        for (Transaction transaction : transactionsList) {
+        for (Transaction transaction : transactions) {
             if (transaction.getAmount() > 0) {
 
                 double amount = transaction.getAmount();
@@ -644,7 +798,7 @@ public class App  {
     }
 
     private static void displayAllEntries(){
-        Collections.sort(transactionsList);
+        Collections.sort(transactions);
 
         System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
@@ -653,7 +807,7 @@ public class App  {
 
 
 
-        for (Transaction transaction : transactionsList) {
+        for (Transaction transaction : transactions) {
 
             double amount = transaction.getAmount();
 
@@ -712,9 +866,11 @@ public class App  {
         currentTransaction.setDescription(description);
         currentTransaction.setVendor(vendor);
         currentTransaction.setAmount(deposit);
-        transactionsList.add(currentTransaction);
+        transactions.add(currentTransaction);
 
         addTransactionToFile(currentTransaction);
+
+        System.out.printf("Deposit of $%.2f recorded successfully.%n", deposit);
 
 
     }
@@ -755,9 +911,11 @@ public class App  {
         currentTransaction.setDescription(description);
         currentTransaction.setVendor(vendor);
         currentTransaction.setAmount(payment);
-        transactionsList.add(currentTransaction);
+        transactions.add(currentTransaction);
 
         addTransactionToFile(currentTransaction);
+
+        System.out.printf("Payment of $%.2f recorded successfully.%n", payment);
     }
 
     private static void addTransactionToFile(Transaction currentTransaction) {
