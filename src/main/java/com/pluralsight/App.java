@@ -1,8 +1,6 @@
 package com.pluralsight;
 
 import java.io.*;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.time.*;
@@ -11,27 +9,29 @@ import static java.lang.Double.*;
 
 
 public class App  {
-    static Scanner input = new Scanner(System.in);
+
+    // Scanner used for all user input
+    static Scanner scanner = new Scanner(System.in);
+
+    // Stores all transactions loaded from file and added during runtime
     static ArrayList<Transaction> transactions = new ArrayList<>();
+
+    // Stores all past searches for reuse and persistence
     static ArrayList<Search> searches = new ArrayList<>();
 
 
 
     public static void main(String[] args) {
 
-        LocalDate currentDate = LocalDate.from(LocalDateTime.now());
-
-
+        // Print current time when application starts
         System.out.println(getCurrentLocalTime());
 
+        // Load existing data from CSV files into memory
+        loadTransactionsFromFile("transactions.csv");
+        loadSearchHistoryFromFile("searches.csv");
 
-        extractTransactionsFile("transactions.csv");
-        extractSearchesFile("searches.csv");
-
-
+        // Start main application UI
         runHomeScreen();
-
-
     }
 
     private static LocalTime getCurrentLocalTime() {
@@ -44,7 +44,7 @@ public class App  {
         return fullyFormattedTime;
     }
 
-    private static void extractTransactionsFile(String fileName) {
+    private static void loadTransactionsFromFile(String fileName) {
 
         try {
             FileReader fileReader = new FileReader(fileName);
@@ -68,12 +68,14 @@ public class App  {
 
             bufferedReader.close();
         } catch (IOException e){
+            System.out.println("ERROR: Unable to load transaction data from file.");
+            System.out.println("Please make sure 'transactions.csv' exists and is not corrupted.");
             e.printStackTrace();
         }
     }
 
     private static void runHomeScreen() {
-        boolean systemIsRunning = true;
+
 
         do {
             System.out.println("""
@@ -92,32 +94,29 @@ public class App  {
         Enter choice:
         """);
 
-            char userChoice = input.nextLine().toUpperCase().charAt(0);
+            char userChoice = scanner.nextLine().toUpperCase().charAt(0);
 
             switch (userChoice) {
-                case 'D', 'd':
+                case 'D':
                     runAddDepositScreen();
                     break;
-                case 'P', 'p':
+                case 'P':
                     runMakePaymentScreen();
                     break;
-                case 'L', 'l':
+                case 'L':
                     runLedgerScreen();
                     break;
-                case 'X', 'x':
+                case 'X':
                     System.out.println("Thanks for using our services!");
                     System.out.println("System exiting now.");
-                    systemIsRunning = false;
                     return;
                 default:
                     System.out.println("Wrong input. Try again.");
             }
-        } while (systemIsRunning);
+        } while (true);
 
     }
 
-//    private static void editOrDeleteTransaction() {
-//    }
 
     private static void runLedgerScreen() {
 
@@ -140,7 +139,7 @@ public class App  {
         --------------------------------------------------
         Enter choice: """);
 
-            char userChoice = input.nextLine().charAt(0);
+            char userChoice = scanner.nextLine().charAt(0);
 
             switch (userChoice) {
                 case 'A', 'a':
@@ -185,7 +184,7 @@ public class App  {
         Enter choice:
         """);
 
-        char userChoice = input.nextLine().charAt(0);
+        char userChoice = scanner.nextLine().charAt(0);
 
         switch (userChoice) {
             case '1':
@@ -256,7 +255,7 @@ public class App  {
 
         System.out.println("-------------------------------------------------------------------------------------------------------------------------");
         System.out.print("\n👉 Enter the \u001B[35mID\u001B[0m of the search you want to reuse: ");
-        int searchID = Integer.parseInt(input.nextLine());
+        int searchID = Integer.parseInt(scanner.nextLine());
 
         int searchIndex = searchID - 1;
 
@@ -270,7 +269,7 @@ public class App  {
         String minAmount = currentSearch.getMinAmount();
         String maxAmount = currentSearch.getMaxAmount();
 
-        createCustomReport(startDate, endDate, description, vendor, minAmount, maxAmount);
+        displayFilteredTransactionsReport(startDate, endDate, description, vendor, minAmount, maxAmount);
         recordCurrentSearch(startDate, endDate, maxAmount, minAmount, description, vendor);
 
     }
@@ -279,22 +278,22 @@ public class App  {
         System.out.println("=== Custom Search === ");
 
         System.out.println("Enter start date (yyyy-MM-dd): ");
-        String startDate = input.nextLine();
+        String startDate = scanner.nextLine();
 
         System.out.println("Enter end date (yyyy-MM-dd): ");
-        String endDate = input.nextLine();
+        String endDate = scanner.nextLine();
 
         System.out.println("Enter transaction description: ");
-        String description = input.nextLine();
+        String description = scanner.nextLine();
 
         System.out.println("Enter vendor: ");
-        String vendor = input.nextLine();
+        String vendor = scanner.nextLine();
 
         System.out.println("Enter minimum amount: ");
-        String minAmount = input.nextLine();
+        String minAmount = scanner.nextLine();
 
         System.out.println("Enter maximum amount: ");
-        String maxAmount = input.nextLine();
+        String maxAmount = scanner.nextLine();
 
         if (!startDate.equals("N/A") && !startDate.isEmpty()
                 && !endDate.equals("N/A") && !endDate.isEmpty()) {
@@ -306,7 +305,7 @@ public class App  {
             }
         }
 
-        createCustomReport(startDate, endDate, description, vendor, minAmount, maxAmount);
+        displayFilteredTransactionsReport(startDate, endDate, description, vendor, minAmount, maxAmount);
 
         recordCurrentSearch(startDate, endDate, maxAmount, minAmount, description, vendor);
 
@@ -355,12 +354,14 @@ public class App  {
             bufferedWriter.close();
 
         } catch (IOException e){
+            System.out.println("ERROR: Unable to write current search into file.");
+            System.out.println("Please make sure 'searches.csv' exists and is not corrupted.");
             e.printStackTrace();
         }
     }
 
 
-    private static void extractSearchesFile(String fileName){
+    private static void loadSearchHistoryFromFile(String fileName){
         try {
             FileReader fileReader = new FileReader(fileName);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -372,7 +373,6 @@ public class App  {
             while ((input = bufferedReader.readLine()) != null) {
                 String[] searchAttributes = input.split("\\|");
                 Search currentSearch = new Search();
-                //            search-date|search-time|start-date|end-date|description|vendor|min-amount|max-amount
                 currentSearch.setSearchDate(LocalDate.parse(searchAttributes[0]));
                 currentSearch.setSearchTime(LocalTime.parse(searchAttributes[1]));
                 currentSearch.setStartDate(searchAttributes[2]);
@@ -390,6 +390,8 @@ public class App  {
 
             bufferedReader.close();
         } catch (IOException e){
+            System.out.println("ERROR: Unable to load search history from file.");
+            System.out.println("Please make sure 'searches.csv' exists and is not corrupted.");
             e.printStackTrace();
         }
 
@@ -397,8 +399,8 @@ public class App  {
     }
 
 
-    private static void createCustomReport(String startDate, String endDate, String description, String vendor,
-                                           String minAmount, String maxAmount) {
+    private static void displayFilteredTransactionsReport(String startDate, String endDate, String description, String vendor,
+                                                          String minAmount, String maxAmount) {
 
         double totalIncome = 0;
         double totalExpenses = 0;
@@ -485,7 +487,7 @@ public class App  {
     private static void displayByVendor() {
 
         System.out.print("Enter the vendor you want a report on: ");
-        String vendor = input.nextLine();
+        String vendor = scanner.nextLine();
 
         double totalIncome = 0;
         double totalExpenses = 0;
@@ -538,8 +540,8 @@ public class App  {
     private static void displayPreviousYearReport() {
 
         System.out.print("Enter the year you want a report on: ");
-        int year = input.nextInt();
-        input.nextLine(); // clear buffer
+        int year = scanner.nextInt();
+        scanner.nextLine(); // clear buffer
 
         double totalIncome = 0;
         double totalExpenses = 0;
@@ -640,11 +642,11 @@ public class App  {
     private static void displayPreviousMonthReport() {
 
         System.out.print("Enter the month (1-12): ");
-        int month = input.nextInt();
+        int month = scanner.nextInt();
 
         System.out.print("Enter the year: ");
-        int year = input.nextInt();
-        input.nextLine(); // clear buffer
+        int year = scanner.nextInt();
+        scanner.nextLine(); // clear buffer
 
         double totalIncome = 0;
         double totalExpenses = 0;
@@ -842,24 +844,24 @@ public class App  {
         while(!invalidInput){
             try {
                 System.out.println("Enter the amount to deposit: ");
-                deposit = Math.abs(input.nextDouble());
-                input.nextLine();
+                deposit = Math.abs(scanner.nextDouble());
+                scanner.nextLine();
 
                 invalidInput = true;
             } catch (InputMismatchException e){
                 System.out.println("ERROR: Invalid input. Please enter a valid number to be recorded as amount");
-                input.nextLine();
+                scanner.nextLine();
             }
 
         }
 
 
         System.out.println("Enter the name of source of income: ");
-        String vendor = input.next();
+        String vendor = scanner.next();
 
-        input.nextLine();
+        scanner.nextLine();
         System.out.println("Enter income description: ");
-        String description = input.nextLine();
+        String description = scanner.nextLine();
 
         LocalTime timeOfTranasaction = getCurrentLocalTime();
         LocalDate dateOfTransaction = LocalDate.from(LocalDateTime.now());
@@ -887,24 +889,24 @@ public class App  {
         while(!validInput) {
             try {
                 System.out.println("Enter the amount to pay: ");
-                payment = Math.abs(input.nextDouble()) * -1;
-                input.nextLine();
+                payment = Math.abs(scanner.nextDouble()) * -1;
+                scanner.nextLine();
 
                 validInput = true;
 
             } catch (InputMismatchException e) {
                 System.out.println("ERROR: Invalid input. Please enter a valid number to be recorded as amount");
-                input.nextLine();
+                scanner.nextLine();
             }
         }
 
 
         System.out.println("Enter the name of the vendor: ");
-        String vendor = input.next();
+        String vendor = scanner.next();
 
-        input.nextLine();
+        scanner.nextLine();
         System.out.println("Enter expense description: ");
-        String description = input.nextLine();
+        String description = scanner.nextLine();
 
         LocalTime timeOfTranasaction = getCurrentLocalTime();
         LocalDate dateOfTransaction = LocalDate.from(LocalDateTime.now());
@@ -937,7 +939,8 @@ public class App  {
             bufferedWriter.close();
         }
         catch (IOException e){
-            System.out.println("ERROR: An unexpected error occurred");
+            System.out.println("ERROR: Unable to write transaction to file.");
+            System.out.println("Please make sure 'transactions.csv' exists and is not corrupted.");
             e.printStackTrace();
         }
     }
