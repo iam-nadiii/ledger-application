@@ -60,3 +60,7 @@ com.pluralsight
 ├── App.java           # Main application + menus
 ├── Transaction.java   # Transaction model
 └── Search.java        # Search model
+
+
+Author: Naod Asmelash
+Email: naodd43@gmail.com
