@@ -86,7 +86,6 @@ public class App  {
             (D)  Add Deposit
             (P)  Make Payment
             (L)  View Ledger
-            (E)  Edit/Delete Transaction
             (X)  Exit Application
 
         --------------------------------------------------
@@ -105,9 +104,6 @@ public class App  {
                 case 'L', 'l':
                     runLedgerScreen();
                     break;
-//                case 'E', 'e':
-//                    editOrDeleteTransaction();
-//                    break;
                 case 'X', 'x':
                     System.out.println("Thanks for using our services!");
                     System.out.println("System exiting now.");
@@ -300,6 +296,16 @@ public class App  {
         System.out.println("Enter maximum amount: ");
         String maxAmount = input.nextLine();
 
+        if (!startDate.equals("N/A") && !startDate.isEmpty()
+                && !endDate.equals("N/A") && !endDate.isEmpty()) {
+
+            if (LocalDate.parse(startDate).isAfter(LocalDate.parse(endDate))) {
+                String tempDate = startDate;
+                startDate = endDate;
+                endDate = tempDate;
+            }
+        }
+
         createCustomReport(startDate, endDate, description, vendor, minAmount, maxAmount);
 
         recordCurrentSearch(startDate, endDate, maxAmount, minAmount, description, vendor);
@@ -319,6 +325,7 @@ public class App  {
         currentSearch.setVendor(vendor);
 
         searches.add(currentSearch);
+        Collections.sort(searches);
 
         addSearchToFile(currentSearch);
     }
@@ -396,6 +403,7 @@ public class App  {
         double totalIncome = 0;
         double totalExpenses = 0;
 
+
         System.out.println("\n==========================================================================================================");
         System.out.println("                                      CUSTOM REPORT");
         System.out.println("==========================================================================================================");
@@ -429,13 +437,10 @@ public class App  {
                 descriptionMatches = false;
             }
 
-            if (!vendor.equals("N/A") && !vendor.isEmpty() && !transaction.getVendor().equalsIgnoreCase(vendor)) {
+            if (!vendor.equals("N/A") && !vendor.isEmpty() &&
+                    !transaction.getVendor().toLowerCase().contains(vendor.toLowerCase())) {
                 vendorMatches = false;
             }
-//            if (!vendor.isEmpty() &&
-//                    !transaction.getVendor().toLowerCase().contains(vendor.toLowerCase())) {
-//                vendorMatches = false;
-//            }
 
             if (!minAmount.equals("N/A") && !minAmount.isEmpty() && transaction.getAmount() < Double.parseDouble(minAmount)) {
                 minAmountMatches = false;
