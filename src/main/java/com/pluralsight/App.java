@@ -295,7 +295,8 @@ public class App  {
         }
 
         // Bottom separator before user input
-        System.out.println("-------------------------------------------------------------------------------------------------------------------------");
+        System.out.println("------------------------------------------------------------------------------------" +
+                "-------------------------------------");
 
         // Prompt user to select a search by ID
         System.out.print("\n👉 Enter the \u001B[35mID\u001B[0m of the search you want to reuse: ");
@@ -499,15 +500,18 @@ public class App  {
         double totalExpenses = 0;
 
         // Print report header
-        System.out.println("\n==========================================================================================================");
+        System.out.println("\n=========================================================================" +
+                "=================================");
         System.out.println("                                      CUSTOM REPORT");
-        System.out.println("==========================================================================================================");
+        System.out.println("===============================================================================" +
+                "===========================");
 
         // Print column headers
         System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
 
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.println("---------------------------------------------------------------------------------------" +
+                "-------------------");
 
         // Sort transactions before displaying
         Collections.sort(transactions);
@@ -584,46 +588,55 @@ public class App  {
         double net = totalIncome + totalExpenses;
 
         // Print totals footer
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.println("------------------------------------------------------------------------------" +
+                "----------------------------");
         System.out.printf("%-85s $%10.2f%n", "Total Income:", totalIncome);
         System.out.printf("%-85s $%10.2f%n", "Total Expenses:", totalExpenses);
         System.out.printf("%-85s $%10.2f%n", "Net Balance:", net);
-        System.out.println("==========================================================================================================\n");
+        System.out.println("==============================================================================" +
+                "============================\n");
     }
 
 
 
     private static void displayByVendor() {
 
+        // Prompt user to enter a vendor name for filtering
         System.out.print("Enter the vendor you want a report on: ");
         String vendor = scanner.nextLine();
 
+        // Track totals for this vendor
         double totalIncome = 0;
         double totalExpenses = 0;
 
-        // Header
-        System.out.println("\n==========================================================================================================");
+        // Print report header with vendor name (converted to uppercase for emphasis)
+        System.out.println("\n=====================================================================================" +
+                "=====================");
         System.out.println("                              VENDOR STATEMENT (" + vendor.toUpperCase() + ")");
-        System.out.println("==========================================================================================================");
+        System.out.println("======================================================================================" +
+                "====================");
 
-        // SAME spacing as all your other reports
+        // Print column headers (consistent spacing with other reports)
         System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
 
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.println("---------------------------------------------------------------------------" +
+                "-------------------------------");
 
+        // Sort transactions so newest appear first
         Collections.sort(transactions);
 
+        // Loop through all transactions and filter by vendor
         for (Transaction transaction : transactions) {
             if (transaction.getVendor().equalsIgnoreCase(vendor)) {
 
                 double amount = transaction.getAmount();
 
-                // Totals
+                // Add to totals depending on whether it's income or expense
                 if (amount > 0) totalIncome += amount;
                 else totalExpenses += amount;
 
-                // SAME formatting + color
+                // Print matching transaction with colored amount
                 System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
                         transaction.getDate(),
                         transaction.getTime(),
@@ -634,46 +647,62 @@ public class App  {
             }
         }
 
+        // Calculate net total for this vendor
         double net = totalIncome + totalExpenses;
 
-        // Footer
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        // Print totals summary
+        System.out.println("------------------------------------------------------------------------" +
+                "----------------------------------");
         System.out.printf("%-85s $%10.2f%n", "Total Income:", totalIncome);
         System.out.printf("%-85s $%10.2f%n", "Total Expenses:", totalExpenses);
         System.out.printf("%-85s $%10.2f%n", "Net Balance:", net);
-        System.out.println("==========================================================================================================\n");
+        System.out.println("=================================================================" +
+                "=========================================\n");
     }
 
 
 
     private static void displayPreviousYearReport() {
 
+        // Prompt user for the year to generate the report
         System.out.print("Enter the year you want a report on: ");
         int year = scanner.nextInt();
-        scanner.nextLine(); // clear buffer
 
+        // Clear leftover newline from input buffer
+        scanner.nextLine();
+
+        // Track totals for the selected year
         double totalIncome = 0;
         double totalExpenses = 0;
 
-        System.out.println("\n==========================================================================================================");
+        // Print report header with selected year
+        System.out.println("\n=================================================================================" +
+                "=========================");
         System.out.println("                                      YEARLY STATEMENT (" + year + ")");
-        System.out.println("==========================================================================================================");
+        System.out.println("================================================================================" +
+                "==========================");
 
+        // Print column headers
         System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
 
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.println("------------------------------------------------------------------------------" +
+                "----------------------------");
 
+        // Sort transactions before processing
         Collections.sort(transactions);
 
+        // Loop through transactions and filter by year
         for (Transaction transaction : transactions) {
             if (transaction.getDate().getYear() == year) {
 
                 double amount = transaction.getAmount();
 
+                // Add to income or expenses totals
                 if (amount > 0) totalIncome += amount;
                 else totalExpenses += amount;
 
+                // Print matching transaction with color formatting
                 System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
                         transaction.getDate(),
                         transaction.getTime(),
@@ -684,48 +713,61 @@ public class App  {
             }
         }
 
+        // Calculate net balance for the year
         double net = totalIncome + totalExpenses;
 
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        // Print totals summary
+        System.out.println("-------------------------------------------------------------------------" +
+                "---------------------------------");
         System.out.printf("%-85s $%10.2f%n", "Total Income:", totalIncome);
         System.out.printf("%-85s $%10.2f%n", "Total Expenses:", totalExpenses);
         System.out.printf("%-85s $%10.2f%n", "Net Balance:", net);
-        System.out.println("==========================================================================================================\n");
+        System.out.println("=============================================================================" +
+                "=============================\n");
     }
 
 
     private static void displayYearToDateReport() {
 
+        // Get today's date
         LocalDate currentDate = LocalDate.now();
+
+        // Extract the current year
         int currentYear = currentDate.getYear();
 
+        // Track totals for current year
         double totalIncome = 0;
         double totalExpenses = 0;
 
-        // Header
-        System.out.println("\n==========================================================================================================");
+        // Print report header with date range (Jan → today)
+        System.out.println("\n==============================================================================" +
+                "============================");
         System.out.println("                                      YEAR TO DATE STATEMENT");
         System.out.println("                                      January - " + currentDate);
-        System.out.println("==========================================================================================================");
+        System.out.println("================================================================================" +
+                "==========================");
 
-        // SAME spacing as your other table
+        // Print column headers (aligned with other reports)
         System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
 
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.println("-------------------------------------------------------------------------------" +
+                "---------------------------");
 
+        // Sort transactions so newest appear first
         Collections.sort(transactions);
 
+        // Loop through all transactions and filter by current year
         for (Transaction transaction : transactions) {
             if (transaction.getDate().getYear() == currentYear) {
 
                 double amount = transaction.getAmount();
 
-                // Totals
+                // Add to income or expense totals
                 if (amount > 0) totalIncome += amount;
                 else totalExpenses += amount;
 
-                // SAME formatting as your other loop
+                // Print matching transaction with colored amount
                 System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
                         transaction.getDate(),
                         transaction.getTime(),
@@ -736,54 +778,67 @@ public class App  {
             }
         }
 
+        // Calculate net balance (income + expenses)
         double net = totalIncome + totalExpenses;
 
-        // Footer aligned with same width
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        // Print totals summary
+        System.out.println("------------------------------------------------------------------------" +
+                "----------------------------------");
         System.out.printf("%-85s $%10.2f%n", "Total Income:", totalIncome);
         System.out.printf("%-85s $%10.2f%n", "Total Expenses:", totalExpenses);
         System.out.printf("%-85s $%10.2f%n", "Net Balance:", net);
-        System.out.println("==========================================================================================================\n");
+        System.out.println("===========================================================================" +
+                "===============================\n");
     }
 
 
 
     private static void displayPreviousMonthReport() {
 
+        // Prompt user for month (1–12)
         System.out.print("Enter the month (1-12): ");
         int month = scanner.nextInt();
 
+        // Prompt user for year
         System.out.print("Enter the year: ");
         int year = scanner.nextInt();
-        scanner.nextLine(); // clear buffer
 
+        // Clear leftover newline from input buffer
+        scanner.nextLine();
+
+        // Track totals for selected month/year
         double totalIncome = 0;
         double totalExpenses = 0;
 
-        // Header
-        System.out.println("\n==========================================================================================================");
+        // Print report header with selected month and year
+        System.out.println("\n===================================================================================" +
+                "=======================");
         System.out.println("                          MONTHLY STATEMENT (" + month + "/" + year + ")");
-        System.out.println("==========================================================================================================");
+        System.out.println("======================================================================================" +
+                "====================");
 
-        // SAME spacing as your other tables
+        // Print column headers
         System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
 
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.println("-------------------------------------------------------------------------------------" +
+                "---------------------");
 
+        // Sort transactions before processing
         Collections.sort(transactions);
 
+        // Loop through transactions and filter by selected month and year
         for (Transaction transaction : transactions) {
             if (transaction.getDate().getYear() == year &&
                     transaction.getDate().getMonthValue() == month) {
 
                 double amount = transaction.getAmount();
 
-                // Totals
+                // Add to totals based on sign of amount
                 if (amount > 0) totalIncome += amount;
                 else totalExpenses += amount;
 
-                // SAME formatting
+                // Print matching transaction row
                 System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
                         transaction.getDate(),
                         transaction.getTime(),
@@ -794,52 +849,64 @@ public class App  {
             }
         }
 
+        // Calculate net balance for the selected period
         double net = totalIncome + totalExpenses;
 
-        // Footer
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        // Print totals summary
+        System.out.println("-------------------------------------------------------------------" +
+                "---------------------------------------");
         System.out.printf("%-85s $%10.2f%n", "Total Income:", totalIncome);
         System.out.printf("%-85s $%10.2f%n", "Total Expenses:", totalExpenses);
         System.out.printf("%-85s $%10.2f%n", "Net Balance:", net);
-        System.out.println("==========================================================================================================\n");
+        System.out.println("=================================================================================" +
+                "=========================\n");
     }
 
 
 
     private static void displayMonthToDateReport() {
 
+        // Get today's date
         LocalDate currentDate = LocalDate.now();
+
+        // Extract current month and year for filtering
         int currentMonth = currentDate.getMonthValue();
         int currentYear  = currentDate.getYear();
 
+        // Track totals for current month
         double totalIncome = 0;
         double totalExpenses = 0;
 
-        // Header
-        System.out.println("\n==========================================================================================================");
+        // Print report header (month-to-date range)
+        System.out.println("\n=====================================================================================" +
+                "=====================");
         System.out.println("                          MONTH TO DATE STATEMENT");
         System.out.println("                          " + currentDate.getMonth() + " " + currentYear);
-        System.out.println("==========================================================================================================");
+        System.out.println("=======================================================================================" +
+                "===================");
 
-        // SAME spacing as your other tables
+        // Print column headers (aligned with other reports)
         System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
 
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.println("-------------------------------------------------------------------------------------" +
+                "---------------------");
 
+        // Sort transactions so newest appear first
         Collections.sort(transactions);
 
+        // Loop through all transactions and filter by current month and year
         for (Transaction transaction : transactions) {
             if (transaction.getDate().getYear() == currentYear &&
                     transaction.getDate().getMonthValue() == currentMonth) {
 
                 double amount = transaction.getAmount();
 
-
+                // Add to income or expenses totals
                 if (amount > 0) totalIncome += amount;
                 else totalExpenses += amount;
 
-
+                // Print matching transaction with colored amount
                 System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
                         transaction.getDate(),
                         transaction.getTime(),
@@ -850,31 +917,46 @@ public class App  {
             }
         }
 
+        // Calculate net balance for current month
         double net = totalIncome + totalExpenses;
 
-        // Footer
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        // Print totals summary
+        System.out.println("--------------------------------------------------------------------------------" +
+                "--------------------------");
         System.out.printf("%-85s $%10.2f%n", "Total Income:", totalIncome);
         System.out.printf("%-85s $%10.2f%n", "Total Expenses:", totalExpenses);
         System.out.printf("%-85s $%10.2f%n", "Net Balance:", net);
-        System.out.println("==========================================================================================================\n");
+        System.out.println("====================================================================================" +
+                "======================\n");
     }
 
 
     private static void displayPayments() {
+
+        // Sort transactions before displaying
         Collections.sort(transactions);
 
+        // Report header
+        System.out.println("\n======================================================================" +
+                "====================================");
+        System.out.println("                                      ALL PAYMENTS");
+        System.out.println("================================================================================" +
+                "==========================");
+
+        // Print column headers
         System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
 
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        System.out.println("--------------------------------------------------------------------------------------" +
+                "--------------------");
 
-
+        // Loop through transactions and display only payments (negative amounts)
         for (Transaction transaction : transactions) {
             if (transaction.getAmount() < 0) {
 
                 double amount = transaction.getAmount();
 
+                // Print payment transaction with colored amount
                 System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
                         transaction.getDate(),
                         transaction.getTime(),
@@ -887,20 +969,34 @@ public class App  {
     }
 
     private static void displayDeposits() {
+
+        // Sort transactions so newest appear first
         Collections.sort(transactions);
 
+        // Report header
+        System.out.println("\n======================================================================" +
+                "====================================");
+        System.out.println("                                      ALL DEPOSITS");
+        System.out.println("================================================================================" +
+                "==========================");
 
+        // Print column headers
         System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
 
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        // Print separator line
+        System.out.println("-------------------------------------------------------------------------------" +
+                "---------------------------");
 
-
+        // Loop through all transactions
         for (Transaction transaction : transactions) {
+
+            // Only display deposits (positive amounts)
             if (transaction.getAmount() > 0) {
 
                 double amount = transaction.getAmount();
 
+                // Print deposit transaction with colored amount
                 System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
                         transaction.getDate(),
                         transaction.getTime(),
@@ -910,23 +1006,37 @@ public class App  {
                         amount);
             }
         }
-
     }
 
     private static void displayAllEntries(){
+
+        // Sort transactions before displaying
         Collections.sort(transactions);
 
+
+        // Report header
+        System.out.println("\n======================================================================" +
+                "====================================");
+        System.out.println("                                      ALL TRANSACTIONS");
+        System.out.println("================================================================================" +
+                "==========================");
+
+
+
+        // Print column headers
         System.out.printf("%-15s %-10s %-30s %-30s %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
 
-        System.out.println("----------------------------------------------------------------------------------------------------------");
+        // Print separator line
+        System.out.println("----------------------------------------------------------------------------------" +
+                "------------------------");
 
-
-
+        // Loop through all transactions and display everything (no filtering)
         for (Transaction transaction : transactions) {
 
             double amount = transaction.getAmount();
 
+            // Print transaction with colored amount (green for deposits, red for payments)
             System.out.printf("%-15s %-10s %-30s %-30s %s$%10.2f\u001B[0m%n",
                     transaction.getDate(),
                     transaction.getTime(),
@@ -935,125 +1045,170 @@ public class App  {
                     colorAmount(amount),
                     amount);
         }
-
     }
 
     private static String colorAmount(double amount) {
-        if (amount > 0) return "\u001B[32m"; // green
-        if (amount < 0) return "\u001B[31m"; // red
-        return "\u001B[0m"; // default
+
+        // Return green color code for deposits/positive amounts
+        if (amount > 0) return "\u001B[32m";
+
+        // Return red color code for payments/negative amounts
+        if (amount < 0) return "\u001B[31m";
+
+        // Return default color if amount is zero
+        return "\u001B[0m";
     }
 
 
 
     private static void runAddDepositScreen() {
+
+        // Tracks whether the user entered a valid deposit amount
         boolean invalidInput = false;
+
+        // Stores the deposit amount
         double deposit = 0;
 
+        // Keep asking until the user enters a valid number
         while(!invalidInput){
             try {
                 System.out.println("Enter the amount to deposit: ");
+
+                // Convert deposit to positive number
                 deposit = Math.abs(scanner.nextDouble());
+
+                // Clear leftover newline from scanner
                 scanner.nextLine();
 
+                // Stop loop after valid input
                 invalidInput = true;
+
             } catch (InputMismatchException e){
+
+                // Handle invalid non-number input
                 System.out.println("ERROR: Invalid input. Please enter a valid number to be recorded as amount");
                 scanner.nextLine();
             }
-
         }
 
-
+        // Ask user for income source/vendor
         System.out.println("Enter the name of source of income: ");
-        String vendor = scanner.next();
+        String vendor = scanner.nextLine();
 
-        scanner.nextLine();
+
+        // Ask user for income description
         System.out.println("Enter income description: ");
         String description = scanner.nextLine();
 
+        // Get current time and date for this transaction
         LocalTime timeOfTranasaction = getCurrentLocalTime();
         LocalDate dateOfTransaction = LocalDate.from(LocalDateTime.now());
 
-
+        // Create and fill a new Transaction object
         Transaction currentTransaction = new Transaction();
         currentTransaction.setDate(dateOfTransaction);
         currentTransaction.setTime(timeOfTranasaction);
         currentTransaction.setDescription(description);
         currentTransaction.setVendor(vendor);
         currentTransaction.setAmount(deposit);
+
+        // Add transaction to list
         transactions.add(currentTransaction);
 
+        // Save transaction to file
         addTransactionToFile(currentTransaction);
 
+        // Confirm successful deposit
         System.out.printf("Deposit of $%.2f recorded successfully.%n", deposit);
-
-
     }
 
+
+
     private static void runMakePaymentScreen() {
+
+        // Stores the payment amount
         double payment = 0;
+
+        // Tracks whether the user entered a valid payment amount
         boolean validInput = false;
 
+        // Keep asking until the user enters a valid number
         while(!validInput) {
             try {
                 System.out.println("Enter the amount to pay: ");
+
+                // Convert payment to a negative number
                 payment = Math.abs(scanner.nextDouble()) * -1;
+
+                // Clear leftover newline from scanner
                 scanner.nextLine();
 
+                // Stop loop after valid input
                 validInput = true;
 
             } catch (InputMismatchException e) {
+
+                // Handle invalid non-number input
                 System.out.println("ERROR: Invalid input. Please enter a valid number to be recorded as amount");
                 scanner.nextLine();
             }
         }
 
-
+        // Ask user for payment vendor
         System.out.println("Enter the name of the vendor: ");
-        String vendor = scanner.next();
+        String vendor = scanner.nextLine();
 
-        scanner.nextLine();
+
+        // Ask user for expense description
         System.out.println("Enter expense description: ");
         String description = scanner.nextLine();
 
+        // Get current time and date for this transaction
         LocalTime timeOfTranasaction = getCurrentLocalTime();
         LocalDate dateOfTransaction = LocalDate.from(LocalDateTime.now());
 
-
+        // Create and fill a new Transaction object
         Transaction currentTransaction = new Transaction();
         currentTransaction.setDate(dateOfTransaction);
         currentTransaction.setTime(timeOfTranasaction);
         currentTransaction.setDescription(description);
         currentTransaction.setVendor(vendor);
         currentTransaction.setAmount(payment);
+
+        // Add transaction to list
         transactions.add(currentTransaction);
 
+        // Save transaction to file
         addTransactionToFile(currentTransaction);
 
+        // Confirm successful payment
         System.out.printf("Payment of $%.2f recorded successfully.%n", payment);
     }
 
+
+
     private static void addTransactionToFile(Transaction currentTransaction) {
         try {
+            // Open transactions.csv in append mode
             FileWriter fileWriter = new FileWriter("transactions.csv", true);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
-
+            // Write transaction as a pipe-separated line
             bufferedWriter.write(currentTransaction.getDate() + "|" + currentTransaction.getTime() + "|" +
                     currentTransaction.getDescription() + "|" + currentTransaction.getVendor() + "|" +
                     currentTransaction.getAmount() + "\n");
 
-
+            // Close writer to save changes
             bufferedWriter.close();
-        }
-        catch (IOException e){
+
+        } catch (IOException e){
+
+            // Handle file writing errors
             System.out.println("ERROR: Unable to write transaction to file.");
             System.out.println("Please make sure 'transactions.csv' exists and is not corrupted.");
             e.printStackTrace();
         }
     }
-
 
 
 
