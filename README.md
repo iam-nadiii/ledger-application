@@ -61,6 +61,8 @@ com.pluralsight
 ├── Transaction.java   # Transaction model
 └── Search.java        # Search model
 
+```
 
 Author: Naod Asmelash
+
 Email: naodd43@gmail.com
